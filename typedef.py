@@ -1,11 +1,15 @@
+import os
 from dataclasses import dataclass
 from typing import Literal
+
+CONST_DLNG = 1
+CONST_DSRT = -1
 
 
 @dataclass(frozen=True, eq=True)
 class CKey:
     contract: str
-    direction: Literal["L", "S"]
+    direction: int  # CONST_DLNG or 1 for long, CONST_DSRT or -1 for short
 
 
 @dataclass
@@ -15,10 +19,10 @@ class CTrade:
     qty: int
 
     @property
-    def direction(self) -> Literal["买", "卖"]:
-        if self.key.direction == "L":
+    def op_direction(self) -> Literal["买", "卖"]:
+        if self.key.direction == CONST_DLNG:
             return "买" if self.offset == "O" else "卖"
-        elif self.key.direction == "S":
+        elif self.key.direction == CONST_DSRT:
             return "卖" if self.offset == "O" else "买"
         else:
             raise ValueError(f"Invalid direction: {self.key.direction}")
@@ -52,7 +56,7 @@ class CPos:
 @dataclass
 class COrder:
     OrderType: str = "普通单"
-    Exchange: Literal["DCE", "SHFE", "CZCE"] = None
+    Exchange: str = None  # "DCE", "SHFE", "CZCE"
     Product: str = None  # instrument like "PK"
     Instrument: str = None  # contract like "PK205"
     Direction: Literal["买", "卖"] = None
@@ -74,3 +78,27 @@ class COrder:
     StopLossPrice: str = None
     CancleTime: str = None
     OrderID: str = None
+
+
+@dataclass
+class CCfg:
+    calendar_path: str
+    project_data_dir: str
+    signals_file_name_tmpl: str
+    positions_file_name_tmpl: str
+
+    @property
+    def cash_flow_path(self) -> str:
+        return os.path.join(self.project_data_dir, "cash_flow.csv")
+
+    @property
+    def allocated_equity_path(self) -> str:
+        return os.path.join(self.project_data_dir, "allocated_equity.csv")
+
+    @property
+    def signals_dir(self) -> str:
+        return os.path.join(self.project_data_dir, "signals")
+
+    @property
+    def positions_dir(self) -> str:
+        return os.path.join(self.project_data_dir, "positions")

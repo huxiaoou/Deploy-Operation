@@ -1,9 +1,0 @@
-cu:
-  hasNgt: true
-  exchange: SHFE
-al:
-  hasNgt: true
-  exchange: SHFE
-AP:
-  hasNgt: false
-  exchange: CZCE
