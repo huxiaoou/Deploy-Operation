@@ -6,4 +6,6 @@ cfg = CCfg(
     project_data_dir=r"E:\Data\Projects\Deploy-Operation",
     signals_file_name_tmpl="signals_sig-date_{}_{}.csv",
     positions_file_name_tmpl="positions_sig-date_{}_{}.csv",
+    trades_file_name_tmpl="trades_sig-date_{}_{}.csv",
+    orders_file_name_tmpl="orders_sig-date_{}_exe-date_{}_{}.csv",
 )

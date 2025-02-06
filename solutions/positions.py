@@ -51,14 +51,15 @@ def load_position(
 ) -> dict[CKey, CPos]:
     pos_file = positions_file_name_tmpl.format(sig_date, sig_type)
     pos_path = os.path.join(positions_dir, sig_date[0:4], sig_date[4:6], pos_file)
-    if os.path.exists(pos_path):
+    if not os.path.exists(pos_path):
         print(f"[INF] {SFY(pos_path)} is not available")
         return {}
 
     pos_df = pd.read_csv(pos_path)
     res: dict[CKey, CPos] = {}
-    for contract, direction, qty in zip(pos_df["contract"], pos_df["direction"], pos_df["quantity"]):
+    for contract, direction, qty, close in zip(
+            pos_df["contract"], pos_df["direction"], pos_df["quantity"], pos_df["close"]):
         key = CKey(contract=contract, direction=direction)
-        pos = CPos(key=key, qty=qty)
+        pos = CPos(key=key, qty=qty, base_price=close)
         res[key] = pos
     return res

@@ -1,6 +1,8 @@
+import os
+import pandas as pd
 from typing import Literal
-from husfort.qinstruments import parse_instrument_from_contract, CInstruMgr
-from typedef import CKey, CPos, CTrade, COrder
+from husfort.qutility import check_and_makedirs, SFG
+from typedef import CKey, CPos, CTrade
 from solutions.positions import load_position
 
 
@@ -12,69 +14,68 @@ def cal_trades_from_pos(
     for pos_key, prev_pos in prev_pos_grp.items():
         this_pos = this_pos_grp.get(pos_key, CPos(key=pos_key, qty=0))
         trade = this_pos.cal_trade_from_another(another=prev_pos)
-        res.append(trade)
+        res.append(trade) if trade.qty > 0 else None
     for pos_key, this_pos in this_pos_grp.items():
         if pos_key not in prev_pos_grp:
             prev_pos = CPos(key=pos_key, qty=0)
             trade = this_pos.cal_trade_from_another(another=prev_pos)
-            res.append(trade)
+            res.append(trade) if trade.qty > 0 else None
     return res
 
 
-def split_trades(trades: list[CTrade], instru_mgr: CInstruMgr) -> tuple[list[CTrade], list[CTrade]]:
-    prev_trades: list[CTrade] = []
-    this_trades: list[CTrade] = []
-    for trade in trades:
-        instru = parse_instrument_from_contract(contract=trade.key.contract)
-        if instru_mgr.has_ngt_sec(instru):
-            prev_trades.append(trade)
-        else:
-            this_trades.append(trade)
-    return prev_trades, this_trades
-
-
-def gen_trades_at_opn(
+def gen_trades(
         this_sig_date: str,
         prev_sig_date: str,
-        positions_file_name_tmpl: str,
-        positions_dir: str,
-        instru_mgr: CInstruMgr,
-) -> tuple[list[CTrade], list[CTrade]]:
-    this_pos_grp = load_position(this_sig_date, "opn", positions_file_name_tmpl, positions_dir)
-    prev_pos_grp = load_position(prev_sig_date, "opn", positions_file_name_tmpl, positions_dir)
-    trades = cal_trades_from_pos(this_pos_grp=this_pos_grp, prev_pos_grp=prev_pos_grp)
-    pm_trades, am_trades = split_trades(trades=trades, instru_mgr=instru_mgr)
-    return pm_trades, am_trades
-
-
-def gen_trades_at_cls(
-        this_sig_date: str,
-        prev_sig_date: str,
+        sig_type: Literal["opn", "cls"],
         positions_file_name_tmpl,
         positions_dir: str,
 ) -> list[CTrade]:
-    this_pos_grp = load_position(this_sig_date, "cls", positions_file_name_tmpl, positions_dir)
-    prev_pos_grp = load_position(prev_sig_date, "cls", positions_file_name_tmpl, positions_dir)
+    this_pos_grp = load_position(this_sig_date, sig_type, positions_file_name_tmpl, positions_dir)
+    prev_pos_grp = load_position(prev_sig_date, sig_type, positions_file_name_tmpl, positions_dir)
     trades = cal_trades_from_pos(this_pos_grp=this_pos_grp, prev_pos_grp=prev_pos_grp)
     return trades
 
 
-def save_trades_for_orders(
+def save_trades(
         trades: list[CTrade],
-        sec_type: Literal["opn", "cls"],
-        orders_dir: str,
-        instru_mgr: CInstruMgr,
+        sig_date: str,
+        sec_type: str,
+        trades_file_name_tmpl: str,
+        trades_dir: str,
 ):
-    orders: list[COrder] = []
+    trades_data: list[dict] = []
     for trade in trades:
-        if trade.qty > 0:
-            instru = parse_instrument_from_contract(contract=trade.key.contract)
-            order = COrder(
-                Exchange=instru_mgr.get_exchange(instrumentId=instru),
-                Product=instru,
-                Instrument=trade.key.contract,
-                Direction=trade.op_direction,
-                OfstFlag=trade.offsetFlag,
-                VolumeTotal=trade.qty,
-            )
-            orders.append(order)
+        trades_data.append(trade.to_dict())
+    check_and_makedirs(d := os.path.join(trades_dir, sig_date[0:4], sig_date[4:6]))
+    trades_file = trades_file_name_tmpl.format(sig_date, sec_type)
+    trades_path = os.path.join(d, trades_file)
+    if trades_data:
+        df = pd.DataFrame(data=trades_data)
+    else:
+        df = pd.DataFrame(columns=CTrade.names())
+    df.to_csv(trades_path, index=False)
+    print(f"[INF] Trades of {sig_date}-{sec_type} saved to {SFG(trades_path)}")
+    return 0
+
+
+def load_trades(
+        sig_date: str,
+        sec_type: str,
+        trades_file_name_tmpl: str,
+        trades_dir: str,
+) -> list[CTrade]:
+    trades_file = trades_file_name_tmpl.format(sig_date, sec_type)
+    trades_path = os.path.join(trades_dir, sig_date[0:4], sig_date[4:6], trades_file)
+    trades_data = pd.read_csv(trades_path, header=0)
+    trades: list[CTrade] = []
+    for _, r in trades_data.iterrows():
+        key = CKey(contract=r["contract"], direction=r["direction"])
+        trade = CTrade(
+            key=key,
+            offset=r["offset"],
+            qty=r["qty"],
+            base_price=r["base_price"],
+            order_price=r["order_price"],
+        )
+        trades.append(trade)
+    return trades
