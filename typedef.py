@@ -83,6 +83,8 @@ class COrder:
 @dataclass
 class CCfg:
     calendar_path: str
+    instru_info_path: str
+
     project_data_dir: str
     signals_file_name_tmpl: str
     positions_file_name_tmpl: str

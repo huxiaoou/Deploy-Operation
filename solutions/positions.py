@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 from typing import Literal
-from husfort.qutility import SFY
+from husfort.qutility import SFY, SFG, check_and_makedirs
 from husfort.qinstruments import CInstruMgr, parse_instrument_from_contract
 from typedef import CKey, CPos
 
@@ -18,12 +18,12 @@ def convert_signal_to_positions(
         instru_mgr: CInstruMgr,
 ):
     sig_file = signals_file_name_tmpl.format(sig_date, sig_type)
-    sig_path = os.path.join(signals_dir, sig_file[0:4], sig_date[4:6], sig_file)
+    sig_path = os.path.join(signals_dir, sig_date[0:4], sig_date[4:6], sig_file)
     if not os.path.exists(sig_path):
         raise FileNotFoundError(sig_path)
 
     sig_data = pd.read_csv(sig_path)
-    pos_data = sig_data[["contract", "weight"]].copy()
+    pos_data = sig_data[["contract", "weight", "close"]].copy()
     pos_data["total_equity"] = allocated_equity
     pos_data["allocated_equity"] = allocated_equity * pos_data["weight"]
     pos_data["instrument"] = pos_data["contract"].map(parse_instrument_from_contract)
@@ -32,12 +32,14 @@ def convert_signal_to_positions(
         lambda z: z["allocated_equity"] / z["multiplier"] / z["close"],
         axis=1,
     )
-    pos_data["quantity"] = pos_data["qty_raw"].round(0).abs()
-    pos_data["direction"] = pos_data["qty_raw"].map(lambda z: np.sign(z))
+    pos_data["quantity"] = pos_data["qty_raw"].round(0).abs().astype(int)
+    pos_data["direction"] = pos_data["qty_raw"].map(lambda z: int(np.sign(z)))
 
     pos_file = positions_file_name_tmpl.format(sig_date, sig_type)
-    pos_path = os.path.join(positions_dir, sig_date[0:4], sig_date[4:6], pos_file)
+    check_and_makedirs(pos_d := os.path.join(positions_dir, sig_date[0:4], sig_date[4:6]))
+    pos_path = os.path.join(pos_d, pos_file)
     pos_data.to_csv(pos_path, index=False, float_format="%.8f")
+    print(f"[INF]Positions of {sig_date}-{sig_type} saved to {SFG(pos_path)}")
     return 0
 
 

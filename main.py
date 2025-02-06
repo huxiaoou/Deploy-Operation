@@ -11,9 +11,16 @@ def parse_args():
         required=True,
     )
 
+    # --- allocated equity
     sub_arg_parser = sub_arg_parsers.add_parser(name="allocated", help="Calculate allocated equity from cash flows")
-    sub_arg_parser.add_argument("--bgn", type=str, default="20250102", help="begin date, format = [YYYYMMDD]")
-    sub_arg_parser.add_argument("--stp", type=str, default="20260101", help="stop date, format = [YYYYMMDD]")
+    sub_arg_parser.add_argument("--bgn", type=str, default="20241201", help="begin date, format = [YYYYMMDD]")
+    sub_arg_parser.add_argument("--stp", type=str, default="20300101", help="stop date, format = [YYYYMMDD]")
+
+    # --- sync signals
+
+    # --- positions
+    sub_arg_parser = sub_arg_parsers.add_parser(name="positions", help="Calculate positions from allocated and signals")
+    sub_arg_parser.add_argument("-d", "--date", type=str, required=True, help="date of signals")
 
     __args = arg_parser.parse_args()
     return __args
@@ -21,14 +28,14 @@ def parse_args():
 
 if __name__ == "__main__":
     from config import cfg
-    from husfort.qcalendar import CCalendar
 
     args = parse_args()
-    calendar = CCalendar(cfg.calendar_path)
 
     if args.switch == "allocated":
+        from husfort.qcalendar import CCalendar
         from solutions.allocated_equity import gen_allocated_equity_from_cash_flow
 
+        calendar = CCalendar(cfg.calendar_path)
         bgn, stp = args.bgn, args.stp
         gen_allocated_equity_from_cash_flow(
             bgn_date=bgn,
@@ -37,3 +44,23 @@ if __name__ == "__main__":
             allocated_equity_path=cfg.allocated_equity_path,
             calendar=calendar,
         )
+    elif args.switch == "positions":
+        from husfort.qinstruments import CInstruMgr
+        from solutions.allocated_equity import CReaderAllocatedEquity
+        from solutions.positions import convert_signal_to_positions
+
+        sig_date = args.date
+        reader_alloc = CReaderAllocatedEquity(cfg.allocated_equity_path)
+        instru_mgr = CInstruMgr(instru_info_path=cfg.instru_info_path)
+
+        for sig_type in ["opn", "cls"]:
+            convert_signal_to_positions(
+                sig_date=sig_date,
+                sig_type=sig_type,
+                signals_file_name_tmpl=cfg.signals_file_name_tmpl,
+                positions_file_name_tmpl=cfg.positions_file_name_tmpl,
+                signals_dir=cfg.signals_dir,
+                positions_dir=cfg.positions_dir,
+                allocated_equity=reader_alloc.get_allocated_equity(sig_date),
+                instru_mgr=instru_mgr,
+            )

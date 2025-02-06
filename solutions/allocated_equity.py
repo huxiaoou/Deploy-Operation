@@ -25,5 +25,5 @@ class CReaderAllocatedEquity:
     def __init__(self, allocated_equity_path: str):
         self.allocated_equity = pd.read_csv(allocated_equity_path, dtype={"trade_date": str}).set_index("trade_date")
 
-    def get_allocated_equity(self, trade_date: str):
+    def get_allocated_equity(self, trade_date: str) -> float:
         return self.allocated_equity.loc[trade_date, "equity"]
