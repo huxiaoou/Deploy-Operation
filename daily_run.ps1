@@ -3,4 +3,5 @@ python main.py -d $sig_date allocated
 python main.py -d $sig_date sync
 python main.py -d $sig_date positions
 python main.py -d $sig_date trades
-python main.py -d $sig_date orders
+python main.py -d $sig_date orders --sec opn
+python main.py -d $sig_date orders --sec cls

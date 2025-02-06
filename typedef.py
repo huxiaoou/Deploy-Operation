@@ -113,10 +113,18 @@ class COrder:
 
 
 @dataclass
+class CHost:
+    hostname: str
+    username: str
+    port: int
+
+
+@dataclass
 class CCfg:
     calendar_path: str
     instru_info_path: str
-
+    host: CHost
+    src_signals_dir: str
     project_data_dir: str
     signals_file_name_tmpl: str
     positions_file_name_tmpl: str

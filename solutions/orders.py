@@ -40,6 +40,7 @@ def save_orders(
         orders_file_name_tmpl: str,
         orders_dir: str,
 ):
+    pd.set_option("display.unicode.east_asian_width", True)
     orders_data: list[dict] = [asdict(order) for order in orders]
     if orders_data:
         df = pd.DataFrame(data=orders_data)
