@@ -18,6 +18,7 @@ def gen_allocated_equity_from_cash_flow(
     ).fillna(0)
     allocated_equity["equity"] = allocated_equity["cash_flow"].cumsum()
     allocated_equity.to_csv(allocated_equity_path, index=False, float_format="%.2f")
+    print(allocated_equity)
     return 0
 
 

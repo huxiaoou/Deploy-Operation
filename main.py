@@ -20,6 +20,7 @@ def parse_args():
         "--bgn", type=str, default="20241201", help="begin date, format = [YYYYMMDD]")
 
     # --- sync signals
+    sub_arg_parsers.add_parser(name="sync", help="Sync signals")
 
     # --- positions
     sub_arg_parsers.add_parser(name="positions", help="Calculate positions from allocated and signals")
@@ -70,9 +71,11 @@ if __name__ == "__main__":
                 positions_file_name_tmpl=cfg.positions_file_name_tmpl,
                 signals_dir=cfg.signals_dir,
                 positions_dir=cfg.positions_dir,
-                allocated_equity=reader_alloc.get_allocated_equity(sig_date),
+                allocated_equity=reader_alloc.get_allocated_equity(sig_date) * 0.5,
                 instru_mgr=instru_mgr,
             )
+    elif args.switch == "sync":
+        raise NotImplementedError
     elif args.switch == "trades":
         from solutions.trades import gen_trades
         from solutions.trades import save_trades

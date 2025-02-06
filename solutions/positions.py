@@ -39,6 +39,7 @@ def convert_signal_to_positions(
     check_and_makedirs(pos_d := os.path.join(positions_dir, sig_date[0:4], sig_date[4:6]))
     pos_path = os.path.join(pos_d, pos_file)
     pos_data.to_csv(pos_path, index=False, float_format="%.8f")
+    print(pos_data)
     print(f"[INF]Positions of {sig_date}-{sig_type} saved to {SFG(pos_path)}")
     return 0
 

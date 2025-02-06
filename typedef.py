@@ -94,7 +94,7 @@ class COrder:
     VolumeTrade: int = None
     Account: str = "CTP模拟"
     Fund: str = "cs3"
-    Strategy: str = "截面CTA策略"
+    Strategy: str = "胡晓欧截面CTA策略"
     Trader: str = "01trader"
     CondOrderInsertPriceType: str = None
     CondCmpPriceType: str = None

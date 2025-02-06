@@ -1,7 +1,7 @@
 import os
 import pandas as pd
 from typing import Literal
-from husfort.qutility import check_and_makedirs, SFG
+from husfort.qutility import check_and_makedirs, SFG, SFY
 from husfort.qinstruments import parse_instrument_from_contract, CInstruMgr
 from typedef import CKey, CPos, CTrade
 from solutions.positions import load_position
@@ -52,10 +52,12 @@ def save_trades(
     trades_path = os.path.join(d, trades_file)
     if trades_data:
         df = pd.DataFrame(data=trades_data)
+        print(df)
     else:
         df = pd.DataFrame(columns=CTrade.names())
+        print(f"[INF] There are no trades available for {SFY(sig_date)}-{SFY(sec_type)}")
     df.to_csv(trades_path, index=False)
-    print(f"[INF] Trades of {sig_date}-{sec_type} saved to {SFG(trades_path)}")
+    print(f"[INF] Trades of {sig_date}-{sec_type} are saved to {SFG(trades_path)}")
     return 0
 
 
