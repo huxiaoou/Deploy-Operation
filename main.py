@@ -3,6 +3,9 @@ import argparse
 
 def parse_args():
     arg_parser = argparse.ArgumentParser()
+    arg_parser.add_argument(
+        "-d", "--date", type=str, required=True, help="date of signals, format=[YYYYMMDD]")
+
     sub_arg_parsers = arg_parser.add_subparsers(
         title="switch to sub functions",
         dest="switch",
@@ -13,22 +16,20 @@ def parse_args():
 
     # --- allocated equity
     sub_arg_parser = sub_arg_parsers.add_parser(name="allocated", help="Calculate allocated equity from cash flows")
-    sub_arg_parser.add_argument("--bgn", type=str, default="20241201", help="begin date, format = [YYYYMMDD]")
-    sub_arg_parser.add_argument("--stp", type=str, default="20300101", help="stop date, format = [YYYYMMDD]")
+    sub_arg_parser.add_argument(
+        "--bgn", type=str, default="20241201", help="begin date, format = [YYYYMMDD]")
 
     # --- sync signals
 
     # --- positions
-    sub_arg_parser = sub_arg_parsers.add_parser(name="positions", help="Calculate positions from allocated and signals")
-    sub_arg_parser.add_argument("-d", "--date", type=str, required=True, help="date of signals")
+    sub_arg_parsers.add_parser(name="positions", help="Calculate positions from allocated and signals")
 
     # --- trades
-    sub_arg_parser = sub_arg_parsers.add_parser(name="trades", help="Calculate trades from positions")
-    sub_arg_parser.add_argument("-d", "--date", type=str, required=True, help="date of signals")
+    sub_arg_parsers.add_parser(name="trades", help="Calculate trades from positions")
 
     # --- orders
     sub_arg_parser = sub_arg_parsers.add_parser(name="orders", help="Convert trades to orders")
-    sub_arg_parser.add_argument("-d", "--date", type=str, required=True, help="date of signals")
+    sub_arg_parser.add_argument("-s", "--sec", type=str, required=True, choices=("opn", "cls"), help="date of signals")
 
     __args = arg_parser.parse_args()
     return __args
@@ -46,7 +47,8 @@ if __name__ == "__main__":
     if args.switch == "allocated":
         from solutions.allocated_equity import gen_allocated_equity_from_cash_flow
 
-        bgn, stp = args.bgn, args.stp
+        bgn, end = args.bgn, args.date
+        stp = calendar.get_next_date(end, shift=1)
         gen_allocated_equity_from_cash_flow(
             bgn_date=bgn,
             stp_date=stp,
@@ -60,7 +62,6 @@ if __name__ == "__main__":
 
         sig_date = args.date
         reader_alloc = CReaderAllocatedEquity(cfg.allocated_equity_path)
-
         for sig_type in ["opn", "cls"]:
             convert_signal_to_positions(
                 sig_date=sig_date,
@@ -78,7 +79,6 @@ if __name__ == "__main__":
 
         this_sig_date = args.date
         prev_sig_date = calendar.get_next_date(this_sig_date, -1)
-
         for sig_type in ["opn", "cls"]:
             trades_opn = gen_trades(
                 this_sig_date=this_sig_date,
@@ -90,6 +90,41 @@ if __name__ == "__main__":
             save_trades(trades_opn, this_sig_date, sig_type, cfg.trades_file_name_tmpl, cfg.trades_dir)
 
     elif args.switch == "orders":
-        raise NotImplementedError
+        from solutions.trades import load_trades, split_trades
+        from solutions.orders import convert_trades_to_orders, save_orders
+
+        sig_date = args.date
+        exe_date = calendar.get_next_date(sig_date, shift=1)
+        trades = load_trades(
+            sig_date=sig_date, sec_type=args.sec,
+            trades_file_name_tmpl=cfg.trades_file_name_tmpl, trades_dir=cfg.trades_dir,
+        )
+        if args.sec == "opn":
+            opn_pm_trades, opn_am_trades = split_trades(trades, instru_mgr)
+            opn_pm_orders = convert_trades_to_orders(opn_pm_trades, instru_mgr, cfg.drift)
+            opn_am_orders = convert_trades_to_orders(opn_am_trades, instru_mgr, cfg.drift)
+            save_orders(
+                orders=opn_pm_orders,
+                sig_date=sig_date, exe_date=exe_date,
+                sec_type="opn", am_or_pm="pm",
+                orders_file_name_tmpl=cfg.orders_file_name_tmpl,
+                orders_dir=cfg.orders_dir,
+            )
+            save_orders(
+                orders=opn_am_orders,
+                sig_date=sig_date, exe_date=exe_date,
+                sec_type="opn", am_or_pm="am",
+                orders_file_name_tmpl=cfg.orders_file_name_tmpl,
+                orders_dir=cfg.orders_dir,
+            )
+        elif args.sec == "cls":
+            cls_orders = convert_trades_to_orders(trades, instru_mgr, cfg.drift)
+            save_orders(
+                orders=cls_orders,
+                sig_date=sig_date, exe_date=exe_date,
+                sec_type="cls", am_or_pm="pm",
+                orders_file_name_tmpl=cfg.orders_file_name_tmpl,
+                orders_dir=cfg.orders_dir,
+            )
     else:
         raise ValueError(f"Invalid switch = {args.switch}")

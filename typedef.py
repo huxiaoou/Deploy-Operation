@@ -1,5 +1,5 @@
 import os
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, fields
 from typing import Literal
 
 CONST_DLNG = 1
@@ -48,6 +48,14 @@ class CTrade:
     @staticmethod
     def names() -> list[str]:
         return ["contract", "direction", "qty", "offset", "base_price", "order_price"]
+
+    def update_order_price(self, drift: float, mini_spread: float):
+        if self.op_direction == "买":
+            order_price = self.base_price * (1 + drift)
+        else:
+            order_price = self.base_price * (1 - drift)
+        self.order_price = (order_price // mini_spread) * mini_spread
+        return 0
 
 
 @dataclass
@@ -98,6 +106,11 @@ class COrder:
     CancleTime: str = None
     OrderID: str = None
 
+    @staticmethod
+    def names() -> list[str]:
+        all_fields = fields(COrder)
+        return [f.name for f in all_fields]
+
 
 @dataclass
 class CCfg:
@@ -109,6 +122,8 @@ class CCfg:
     positions_file_name_tmpl: str
     trades_file_name_tmpl: str
     orders_file_name_tmpl: str
+
+    drift: float
 
     @property
     def cash_flow_path(self) -> str:

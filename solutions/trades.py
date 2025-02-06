@@ -2,6 +2,7 @@ import os
 import pandas as pd
 from typing import Literal
 from husfort.qutility import check_and_makedirs, SFG
+from husfort.qinstruments import parse_instrument_from_contract, CInstruMgr
 from typedef import CKey, CPos, CTrade
 from solutions.positions import load_position
 
@@ -39,7 +40,7 @@ def gen_trades(
 def save_trades(
         trades: list[CTrade],
         sig_date: str,
-        sec_type: str,
+        sec_type: Literal["opn", "cls"],
         trades_file_name_tmpl: str,
         trades_dir: str,
 ):
@@ -60,7 +61,7 @@ def save_trades(
 
 def load_trades(
         sig_date: str,
-        sec_type: str,
+        sec_type: Literal["opn", "cls"],
         trades_file_name_tmpl: str,
         trades_dir: str,
 ) -> list[CTrade]:
@@ -79,3 +80,15 @@ def load_trades(
         )
         trades.append(trade)
     return trades
+
+
+def split_trades(trades: list[CTrade], instru_mgr: CInstruMgr) -> tuple[list[CTrade], list[CTrade]]:
+    opn_pm_trades: list[CTrade] = []
+    opn_am_trades: list[CTrade] = []
+    for trade in trades:
+        instru = parse_instrument_from_contract(contract=trade.key.contract)
+        if instru_mgr.has_ngt_sec(instru):
+            opn_pm_trades.append(trade)
+        else:
+            opn_am_trades.append(trade)
+    return opn_pm_trades, opn_am_trades
