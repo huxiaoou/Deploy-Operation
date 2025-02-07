@@ -1,6 +1,7 @@
 import os
 from dataclasses import dataclass, fields
 from typing import Literal
+from husfort.qremote import CHost
 
 CONST_DLNG = 1
 CONST_DSRT = -1
@@ -110,13 +111,6 @@ class COrder:
     def names() -> list[str]:
         all_fields = fields(COrder)
         return [f.name for f in all_fields]
-
-
-@dataclass
-class CHost:
-    hostname: str
-    username: str
-    port: int
 
 
 @dataclass
