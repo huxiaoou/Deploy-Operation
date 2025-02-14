@@ -1,9 +1,8 @@
 import os
 import pandas as pd
-from typing import Literal
 from husfort.qutility import check_and_makedirs, SFG, SFY
 from husfort.qinstruments import parse_instrument_from_contract, CInstruMgr
-from typedef import CKey, CPos, CTrade
+from typedef import CKey, CPos, CTrade, EnumSigs, EnumPOSD, EnumOFFSET
 from solutions.positions import load_position
 
 
@@ -27,7 +26,7 @@ def cal_trades_from_pos(
 def gen_trades(
         this_sig_date: str,
         prev_sig_date: str,
-        sig_type: Literal["opn", "cls"],
+        sig_type: EnumSigs,
         positions_file_name_tmpl,
         positions_dir: str,
 ) -> list[CTrade]:
@@ -40,7 +39,7 @@ def gen_trades(
 def save_trades(
         trades: list[CTrade],
         sig_date: str,
-        sec_type: Literal["opn", "cls"],
+        sig_type: EnumSigs,
         trades_file_name_tmpl: str,
         trades_dir: str,
 ):
@@ -48,34 +47,34 @@ def save_trades(
     for trade in trades:
         trades_data.append(trade.to_dict())
     check_and_makedirs(d := os.path.join(trades_dir, sig_date[0:4], sig_date[4:6]))
-    trades_file = trades_file_name_tmpl.format(sig_date, sec_type)
+    trades_file = trades_file_name_tmpl.format(sig_date, sig_type.value)
     trades_path = os.path.join(d, trades_file)
     if trades_data:
-        df = pd.DataFrame(data=trades_data)
-        print(df)
+        df = pd.DataFrame(data=trades_data).sort_values(by="contract")
+        # print(df)
     else:
         df = pd.DataFrame(columns=CTrade.names())
-        print(f"[INF] There are no trades available for {SFY(sig_date)}-{SFY(sec_type)}")
+        print(f"[INF] There are no trades available for {SFY(sig_date)}-{SFY(sig_type.value)}.")
     df.to_csv(trades_path, index=False)
-    print(f"[INF] Trades of {sig_date}-{sec_type} are saved to {SFG(trades_path)}")
+    print(f"[INF] Trades of {sig_date}-{sig_type.value} are saved to {SFG(trades_path)}")
     return 0
 
 
 def load_trades(
         sig_date: str,
-        sec_type: Literal["opn", "cls"],
+        sig_type: EnumSigs,
         trades_file_name_tmpl: str,
         trades_dir: str,
 ) -> list[CTrade]:
-    trades_file = trades_file_name_tmpl.format(sig_date, sec_type)
+    trades_file = trades_file_name_tmpl.format(sig_date, sig_type.value)
     trades_path = os.path.join(trades_dir, sig_date[0:4], sig_date[4:6], trades_file)
     trades_data = pd.read_csv(trades_path, header=0)
     trades: list[CTrade] = []
     for _, r in trades_data.iterrows():
-        key = CKey(contract=r["contract"], direction=r["direction"])
+        key = CKey(contract=r["contract"], direction=EnumPOSD(r["direction"]))
         trade = CTrade(
             key=key,
-            offset=r["offset"],
+            offset=EnumOFFSET(r["offset"]),
             qty=r["qty"],
             base_price=r["base_price"],
             order_price=r["order_price"],

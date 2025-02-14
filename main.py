@@ -39,6 +39,7 @@ def parse_args():
 if __name__ == "__main__":
     from husfort.qcalendar import CCalendar
     from husfort.qinstruments import CInstruMgr
+    from typedef import EnumSigs
     from config import cfg
 
     calendar = CCalendar(cfg.calendar_path)
@@ -61,7 +62,7 @@ if __name__ == "__main__":
     elif args.switch == "sync":
         from solutions.sync import download_signals_from
 
-        for sig_type in ["opn", "cls"]:
+        for sig_type in EnumSigs:
             download_signals_from(
                 sig_date=sig_date,
                 sig_type=sig_type,
@@ -75,7 +76,7 @@ if __name__ == "__main__":
         from solutions.positions import convert_signal_to_positions
 
         reader_alloc = CReaderAllocatedEquity(cfg.allocated_equity_path)
-        for sig_type in ["opn", "cls"]:
+        for sig_type in EnumSigs:
             convert_signal_to_positions(
                 sig_date=sig_date,
                 sig_type=sig_type,
@@ -91,7 +92,7 @@ if __name__ == "__main__":
         from solutions.trades import save_trades
 
         prev_sig_date = calendar.get_next_date(sig_date, -1)
-        for sig_type in ["opn", "cls"]:
+        for sig_type in EnumSigs:
             trades_opn = gen_trades(
                 this_sig_date=sig_date,
                 prev_sig_date=prev_sig_date,
@@ -106,8 +107,9 @@ if __name__ == "__main__":
         from solutions.orders import convert_trades_to_orders, save_orders
 
         exe_date = calendar.get_next_date(sig_date, shift=1)
+        sig_type = EnumSigs.cls if args.sec == "cls" else EnumSigs.opn
         trades = load_trades(
-            sig_date=sig_date, sec_type=args.sec,
+            sig_date=sig_date, sig_type=sig_type,
             trades_file_name_tmpl=cfg.trades_file_name_tmpl, trades_dir=cfg.trades_dir,
         )
         if args.sec == "opn":

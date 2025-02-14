@@ -49,6 +49,8 @@ def save_orders(
         df = pd.DataFrame(columns=COrder.names())
         print(f"[INF] There are no orders available for {SFY(sig_date)}-{SFY(sec_type)}-{SFY(am_or_pm)}")
     check_and_makedirs(d := os.path.join(orders_dir, sig_date[0:4], sig_date[4:6]))
+    if sec_type == "opn" and am_or_pm == "pm":
+        exe_date = sig_date
     orders_file = orders_file_name_tmpl.format(sig_date, exe_date, sec_type, am_or_pm)
     orders_path = os.path.join(d, orders_file)
     df.to_excel(orders_path, index=False, float_format="%.2f", engine='openpyxl')

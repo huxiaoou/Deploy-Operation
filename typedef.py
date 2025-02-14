@@ -1,47 +1,63 @@
 import os
+from enum import Enum
 from dataclasses import dataclass, fields
 from typing import Literal
 from husfort.qremote import CHost
 
-CONST_DLNG = 1
-CONST_DSRT = -1
-CONST_OFFSET_O = 1
-CONST_OFFSET_C = -1
+
+class EnumSigs(Enum):
+    opn: str = 'opn'
+    cls: str = 'cls'
+
+
+class EnumPOSD(Enum):
+    LNG = 1
+    SRT = -1
+
+
+class EnumOFFSET(Enum):
+    OPN = 1
+    CLS = -1
 
 
 @dataclass(frozen=True, eq=True)
 class CKey:
     contract: str
-    direction: int  # CONST_DLNG or 1 for long, CONST_DSRT or -1 for short
+    direction: EnumPOSD
 
 
 @dataclass
 class CTrade:
     key: CKey
-    offset: int  # CONST_OFFSET_O or 1 for open, CONST_OFFSET_C or -1 for close
+    offset: EnumOFFSET
     qty: int
     base_price: float = None
     order_price: float = None
 
     @property
     def op_direction(self) -> Literal["买", "卖"]:
-        if self.key.direction == CONST_DLNG:
-            return "买" if self.offset == CONST_OFFSET_O else "卖"
-        elif self.key.direction == CONST_DSRT:
-            return "卖" if self.offset == CONST_OFFSET_O else "买"
+        if self.key.direction == EnumPOSD.LNG:
+            return "买" if self.offset == EnumOFFSET.OPN else "卖"
+        elif self.key.direction == EnumPOSD.SRT:
+            return "卖" if self.offset == EnumOFFSET.OPN else "买"
         else:
             raise ValueError(f"Invalid direction: {self.key.direction}")
 
     @property
     def offsetFlag(self) -> Literal["开仓", "平仓"]:
-        return "开仓" if self.offset == CONST_OFFSET_O else "平仓"
+        if self.offset == EnumOFFSET.OPN:
+            return "开仓"
+        elif self.offset == EnumOFFSET.CLS:
+            return "平仓"
+        else:
+            raise ValueError(f"Invalid offset: {self.offset}")
 
     def to_dict(self) -> dict:
         return {
             "contract": self.key.contract,
-            "direction": self.key.direction,
+            "direction": self.key.direction.value,
             "qty": self.qty,
-            "offset": self.offset,
+            "offset": self.offset.value,
             "base_price": self.base_price,
             "order_price": self.order_price,
         }
@@ -67,12 +83,12 @@ class CPos:
 
     def cal_trade_from_another(self, another: "CPos") -> CTrade:
         if (d := self.qty - another.qty) >= 0:
-            return CTrade(key=self.key, qty=d, offset=CONST_OFFSET_O, base_price=self.base_price)
+            return CTrade(key=self.key, qty=d, offset=EnumOFFSET.OPN, base_price=self.base_price)
         else:
-            return CTrade(key=self.key, qty=-d, offset=CONST_OFFSET_C, base_price=self.base_price)
+            return CTrade(key=self.key, qty=-d, offset=EnumOFFSET.CLS, base_price=self.base_price)
 
     def update_from_trade(self, trade: "CTrade"):
-        if trade.offset == CONST_OFFSET_O:
+        if trade.offset == EnumOFFSET.OPN:
             self.qty += trade.qty
         else:
             if self.qty < trade.qty:
