@@ -42,7 +42,7 @@ def convert_signal_to_positions(
     return 0
 
 
-def load_position(
+def load_position_tqdb(
         sig_date: str,
         sig_type: EnumSigs,
         positions_file_name_tmpl: str,
@@ -61,5 +61,39 @@ def load_position(
         if direction != 0:
             key = CKey(contract=contract, direction=EnumPOSD(direction))
             pos = CPos(key=key, qty=qty, base_price=close)
+            res[key] = pos
+    return res
+
+
+def load_position_fuai(
+        sig_date: str,
+        sig_type: EnumSigs,
+        positions_file_name_fuai_tmpl: str,
+        positions_dir: str,
+) -> dict[CKey, CPos]:
+    pos_file = positions_file_name_fuai_tmpl.format(sig_date)
+    pos_path = os.path.join(positions_dir, sig_date[0:4], sig_date[4:6], pos_file)
+    if not os.path.exists(pos_path):
+        print(f"[INF] {SFY(pos_path)} is not available")
+        return {}
+
+    if sig_type == EnumSigs.opn:
+        account = 'strategy1'
+    elif sig_type == EnumSigs.cls:
+        account = 'strategy1'
+    else:
+        raise ValueError(f"Invalid sig_type ={sig_type}")
+
+    pos_df = pd.read_excel(pos_path).set_index("合约").query(f"策略账户 == '{account}'")
+    res: dict[CKey, CPos] = {}
+    for contract, r in pos_df.iterrows():
+        contract: str
+        if (qty := r["买总持仓"]) > 0:
+            key = CKey(contract=contract, direction=EnumPOSD.LNG)
+            pos = CPos(key=key, qty=qty)
+            res[key] = pos
+        if (qty := r["卖总持仓"]) > 0:
+            key = CKey(contract=contract, direction=EnumPOSD.SRT)
+            pos = CPos(key=key, qty=qty)
             res[key] = pos
     return res

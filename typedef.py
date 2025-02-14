@@ -137,7 +137,8 @@ class CCfg:
     src_signals_dir: str
     project_data_dir: str
     signals_file_name_tmpl: str
-    positions_file_name_tmpl: str
+    positions_file_name_tqdb_tmpl: str
+    positions_file_name_fuai_tmpl: str
     trades_file_name_tmpl: str
     orders_file_name_tmpl: str
 

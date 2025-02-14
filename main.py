@@ -26,7 +26,9 @@ def parse_args():
     sub_arg_parsers.add_parser(name="positions", help="Calculate positions from allocated and signals")
 
     # --- trades
-    sub_arg_parsers.add_parser(name="trades", help="Calculate trades from positions")
+    sub_arg_parser = sub_arg_parsers.add_parser(name="trades", help="Calculate trades from positions")
+    sub_arg_parser.add_argument("--usetq", default=False, action="store_true",
+                                help="Use this flag to use trans-quant data instead of fuai data")
 
     # --- orders
     sub_arg_parser = sub_arg_parsers.add_parser(name="orders", help="Convert trades to orders")
@@ -81,7 +83,7 @@ if __name__ == "__main__":
                 sig_date=sig_date,
                 sig_type=sig_type,
                 signals_file_name_tmpl=cfg.signals_file_name_tmpl,
-                positions_file_name_tmpl=cfg.positions_file_name_tmpl,
+                positions_file_name_tmpl=cfg.positions_file_name_tqdb_tmpl,
                 signals_dir=cfg.signals_dir,
                 positions_dir=cfg.positions_dir,
                 allocated_equity=reader_alloc.get_allocated_equity(sig_date) * 0.5,
@@ -97,8 +99,10 @@ if __name__ == "__main__":
                 this_sig_date=sig_date,
                 prev_sig_date=prev_sig_date,
                 sig_type=sig_type,
-                positions_file_name_tmpl=cfg.positions_file_name_tmpl,
+                positions_file_name_tqdb_tmpl=cfg.positions_file_name_tqdb_tmpl,
+                positions_file_name_fuai_tmpl=cfg.positions_file_name_fuai_tmpl,
                 positions_dir=cfg.positions_dir,
+                use_tq=args.usetq,
             )
             save_trades(trades_opn, sig_date, sig_type, cfg.trades_file_name_tmpl, cfg.trades_dir)
 

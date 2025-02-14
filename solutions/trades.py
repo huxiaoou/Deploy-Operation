@@ -3,7 +3,7 @@ import pandas as pd
 from husfort.qutility import check_and_makedirs, SFG, SFY
 from husfort.qinstruments import parse_instrument_from_contract, CInstruMgr
 from typedef import CKey, CPos, CTrade, EnumSigs, EnumPOSD, EnumOFFSET
-from solutions.positions import load_position
+from solutions.positions import load_position_tqdb, load_position_fuai
 
 
 def cal_trades_from_pos(
@@ -27,11 +27,16 @@ def gen_trades(
         this_sig_date: str,
         prev_sig_date: str,
         sig_type: EnumSigs,
-        positions_file_name_tmpl,
+        positions_file_name_tqdb_tmpl: str,
+        positions_file_name_fuai_tmpl: str,
         positions_dir: str,
+        use_tq: bool,
 ) -> list[CTrade]:
-    this_pos_grp = load_position(this_sig_date, sig_type, positions_file_name_tmpl, positions_dir)
-    prev_pos_grp = load_position(prev_sig_date, sig_type, positions_file_name_tmpl, positions_dir)
+    this_pos_grp = load_position_tqdb(this_sig_date, sig_type, positions_file_name_tqdb_tmpl, positions_dir)
+    if use_tq:
+        prev_pos_grp = load_position_tqdb(prev_sig_date, sig_type, positions_file_name_tqdb_tmpl, positions_dir)
+    else:
+        prev_pos_grp = load_position_fuai(this_sig_date, sig_type, positions_file_name_fuai_tmpl, positions_dir)
     trades = cal_trades_from_pos(this_pos_grp=this_pos_grp, prev_pos_grp=prev_pos_grp)
     return trades
 
