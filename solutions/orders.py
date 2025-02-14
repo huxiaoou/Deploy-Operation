@@ -44,7 +44,7 @@ def save_orders(
     orders_data: list[dict] = [asdict(order) for order in orders]
     if orders_data:
         df = pd.DataFrame(data=orders_data)
-        print(df)
+        # print(df)
     else:
         df = pd.DataFrame(columns=COrder.names())
         print(f"[INF] There are no orders available for {SFY(sig_date)}-{SFY(sec_type)}-{SFY(am_or_pm)}")

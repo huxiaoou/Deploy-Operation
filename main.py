@@ -107,7 +107,7 @@ if __name__ == "__main__":
         from solutions.orders import convert_trades_to_orders, save_orders
 
         exe_date = calendar.get_next_date(sig_date, shift=1)
-        sig_type = EnumSigs.cls if args.sec == "cls" else EnumSigs.opn
+        sig_type = EnumSigs(args.sec)
         trades = load_trades(
             sig_date=sig_date, sig_type=sig_type,
             trades_file_name_tmpl=cfg.trades_file_name_tmpl, trades_dir=cfg.trades_dir,
