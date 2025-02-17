@@ -128,6 +128,20 @@ class COrder:
         all_fields = fields(COrder)
         return [f.name for f in all_fields]
 
+    def update_order_price(self, base_price: float, drift: float, mini_spread: float):
+        if self.Direction == "买":
+            order_price = base_price * (1 + drift)
+        else:
+            order_price = base_price * (1 - drift)
+        self.Price = (order_price // mini_spread) * mini_spread
+        return 0
+
+
+@dataclass(frozen=True)
+class CAccountTianqin:
+    account: str
+    password: str
+
 
 @dataclass
 class CCfg:
@@ -141,6 +155,7 @@ class CCfg:
     positions_file_name_fuai_tmpl: str
     trades_file_name_tmpl: str
     orders_file_name_tmpl: str
+    account_tianqin: CAccountTianqin
 
     drift: float
 

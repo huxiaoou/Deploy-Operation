@@ -108,7 +108,7 @@ if __name__ == "__main__":
 
     elif args.switch == "orders":
         from solutions.trades import load_trades, split_trades
-        from solutions.orders import convert_trades_to_orders, save_orders
+        from solutions.orders import convert_trades_to_orders, update_price, save_orders
 
         exe_date = calendar.get_next_date(sig_date, shift=1)
         sig_type = EnumSigs(args.sec)
@@ -136,6 +136,7 @@ if __name__ == "__main__":
             )
         elif args.sec == "cls":
             cls_orders = convert_trades_to_orders(trades, instru_mgr, cfg.drift)
+            update_price(cls_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
             save_orders(
                 orders=cls_orders,
                 sig_date=sig_date, exe_date=exe_date,

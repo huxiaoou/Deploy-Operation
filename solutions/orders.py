@@ -4,7 +4,8 @@ from typing import Literal
 from dataclasses import asdict
 from husfort.qutility import check_and_makedirs, SFG, SFY
 from husfort.qinstruments import CInstruMgr, parse_instrument_from_contract
-from typedef import CTrade, COrder
+from typedef import CTrade, COrder, CAccountTianqin
+from solutions.md import req_md_last_price_tianqin
 
 
 def convert_trades_to_orders(
@@ -29,6 +30,29 @@ def convert_trades_to_orders(
             )
             orders.append(order)
     return orders
+
+
+def update_price(
+        orders: list[COrder],
+        account: CAccountTianqin,
+        instru_mgr: CInstruMgr,
+        drift: float,
+):
+    tq_contracts = [f"{order.Exchange}.{order.Instrument}" for order in orders]
+    last_prices = req_md_last_price_tianqin(
+        tq_contracts=tq_contracts,
+        tq_account=account.account,
+        tq_password=account.password,
+    )
+    for order in orders:
+        contract = f"{order.Exchange}.{order.Instrument}"
+        mini_spread = instru_mgr.get_mini_spread(order.Product)
+        order.update_order_price(
+            base_price=last_prices[contract],
+            drift=drift,
+            mini_spread=mini_spread,
+        )
+    return 0
 
 
 def save_orders(
