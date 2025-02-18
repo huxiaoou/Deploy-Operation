@@ -1,19 +1,27 @@
-from typing import Literal
 from tqsdk import TqApi, TqAuth
-from dataclasses import asdict, dataclass
 from typedef import CPriceBounds
+from WindPy import w as wapi
+import pandas as pd
 
 
 def req_md_trade_date_wind(
-        contracts: list[str],
+        wd_contracts: list[str],
         trade_date: str,
-        price: Literal["open", "close"] = "close",
-) -> dict[str, float]:
-    raise NotImplementedError
+        fields: list[str],
+) -> pd.DataFrame:
+    """
 
-
-def req_md_last_price_wind(contracts: list[str]) -> dict[str, float]:
-    raise NotImplementedError
+    :param wd_contracts: ["RB2505.SHF", "M2505.DCE", "CF505.CZC"]
+    :param trade_date:
+    :param fields:  ["settle,changelt"]
+    :return:
+    """
+    wapi.start()
+    data = wapi.wss(wd_contracts, fields, options=f"tradeDate={trade_date};cycle=D")
+    if data.ErrorCode == 0:
+        return pd.DataFrame(data.Data, index=data.Fields, columns=data.Codes).T
+    else:
+        raise Exception(f"Wind data ErrorCode = {data.ErrorCode}")
 
 
 def req_md_last_price_tianqin(
@@ -48,20 +56,3 @@ def req_md_last_price_tianqin(
             break
     api.close()
     return res
-
-
-if __name__ == "__main__":
-    import argparse
-    import pandas as pd
-
-    arg_parser = argparse.ArgumentParser("Test of requesting md")
-    arg_parser.add_argument("--account", required=True, type=str, help="TQ Account name")
-    arg_parser.add_argument("--password", required=True, type=str, help="TQ Account password")
-    args = arg_parser.parse_args()
-
-    prices = req_md_last_price_tianqin(
-        tq_contracts=["DCE.a2505", "SHFE.rb2505", "CZCE.CF505"],
-        tq_account=args.account,
-        tq_password=args.password,
-    )
-    print(pd.DataFrame.from_dict({k: asdict(v) for k, v in prices.items()}, orient="index"))

@@ -6,8 +6,8 @@ from husfort.qremote import CHost
 
 
 class EnumSigs(Enum):
-    opn: str = 'opn'
-    cls: str = 'cls'
+    opn: str = "opn"
+    cls: str = "cls"
 
 
 class EnumPOSD(Enum):
@@ -123,7 +123,7 @@ class COrder:
     VolumeTrade: int = None
     Account: str = "CTP模拟"
     Fund: str = "cs3"
-    Strategy: str = None  # "胡晓欧截面CTA收盘"
+    Strategy: str = None  # ["胡晓欧截面CTA收盘", ""胡晓欧截面CTA开盘"]
     Trader: str = "01trader"
     CondOrderInsertPriceType: str = None
     CondCmpPriceType: str = None
