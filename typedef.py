@@ -20,6 +20,11 @@ class EnumOFFSET(Enum):
     CLS = -1
 
 
+class EnumStrategyName(Enum):
+    opn: str = "胡晓欧截面CTA开盘"
+    cls: str = "胡晓欧截面CTA收盘"
+
+
 @dataclass(frozen=True, eq=True)
 class CKey:
     contract: str
@@ -97,6 +102,13 @@ class CPos:
                 self.qty -= trade.qty
 
 
+@dataclass(frozen=True)
+class CPriceBounds:
+    last: float
+    upper_lim: float
+    lower_lim: float
+
+
 @dataclass
 class COrder:
     OrderType: str = "普通单"
@@ -111,7 +123,7 @@ class COrder:
     VolumeTrade: int = None
     Account: str = "CTP模拟"
     Fund: str = "cs3"
-    Strategy: str = "胡晓欧截面CTA策略"
+    Strategy: str = None  # "胡晓欧截面CTA收盘"
     Trader: str = "01trader"
     CondOrderInsertPriceType: str = None
     CondCmpPriceType: str = None
@@ -128,12 +140,15 @@ class COrder:
         all_fields = fields(COrder)
         return [f.name for f in all_fields]
 
-    def update_order_price(self, base_price: float, drift: float, mini_spread: float):
+    def update_order_price(self, price_bounds: CPriceBounds, drift: float, mini_spread: float):
         if self.Direction == "买":
-            order_price = base_price * (1 + drift)
+            order_price = price_bounds.last * (1 + drift)
+            integer_multiple = (order_price // mini_spread) * mini_spread
+            self.Price = min(integer_multiple, price_bounds.upper_lim)
         else:
-            order_price = base_price * (1 - drift)
-        self.Price = (order_price // mini_spread) * mini_spread
+            order_price = price_bounds.last * (1 - drift)
+            integer_multiple = (order_price // mini_spread) * mini_spread
+            self.Price = max(integer_multiple, price_bounds.lower_lim)
         return 0
 
 

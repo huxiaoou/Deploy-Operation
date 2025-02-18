@@ -109,6 +109,7 @@ if __name__ == "__main__":
     elif args.switch == "orders":
         from solutions.trades import load_trades, split_trades
         from solutions.orders import convert_trades_to_orders, update_price, save_orders
+        from typedef import EnumStrategyName
 
         exe_date = calendar.get_next_date(sig_date, shift=1)
         sig_type = EnumSigs(args.sec)
@@ -118,8 +119,8 @@ if __name__ == "__main__":
         )
         if args.sec == "opn":
             opn_pm_trades, opn_am_trades = split_trades(trades, instru_mgr)
-            opn_pm_orders = convert_trades_to_orders(opn_pm_trades, instru_mgr, cfg.drift)
-            opn_am_orders = convert_trades_to_orders(opn_am_trades, instru_mgr, cfg.drift)
+            opn_pm_orders = convert_trades_to_orders(opn_pm_trades, instru_mgr, cfg.drift, EnumStrategyName.opn.value)
+            opn_am_orders = convert_trades_to_orders(opn_am_trades, instru_mgr, cfg.drift, EnumStrategyName.opn.value)
             save_orders(
                 orders=opn_pm_orders,
                 sig_date=sig_date, exe_date=exe_date,
@@ -135,7 +136,7 @@ if __name__ == "__main__":
                 orders_dir=cfg.orders_dir,
             )
         elif args.sec == "cls":
-            cls_orders = convert_trades_to_orders(trades, instru_mgr, cfg.drift)
+            cls_orders = convert_trades_to_orders(trades, instru_mgr, cfg.drift, EnumStrategyName.cls.value)
             update_price(cls_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
             save_orders(
                 orders=cls_orders,

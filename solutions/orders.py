@@ -12,6 +12,7 @@ def convert_trades_to_orders(
         trades: list[CTrade],
         instru_mgr: CInstruMgr,
         drift: float,
+        strategy: str,
 ) -> list[COrder]:
     orders: list[COrder] = []
     for trade in trades:
@@ -27,6 +28,7 @@ def convert_trades_to_orders(
                 Price=trade.order_price,
                 OfstFlag=trade.offsetFlag,
                 VolumeTotal=trade.qty,
+                Strategy=strategy,
             )
             orders.append(order)
     return orders
@@ -48,7 +50,7 @@ def update_price(
         contract = f"{order.Exchange}.{order.Instrument}"
         mini_spread = instru_mgr.get_mini_spread(order.Product)
         order.update_order_price(
-            base_price=last_prices[contract],
+            price_bounds=last_prices[contract],
             drift=drift,
             mini_spread=mini_spread,
         )
