@@ -32,7 +32,8 @@ def parse_args():
 
     # --- orders
     sub_arg_parser = sub_arg_parsers.add_parser(name="orders", help="Convert trades to orders")
-    sub_arg_parser.add_argument("-s", "--sec", type=str, required=True, choices=("opn", "cls"), help="date of signals")
+    sub_arg_parser.add_argument("--sec", type=str, required=True, choices=("opn", "cls"), help="date of signals")
+    sub_arg_parser.add_argument("--type", type=str, required=True, choices=("real", "last"), help="type of data source")
 
     # --- tests
     sub_arg_parser = sub_arg_parsers.add_parser(name="test", help="do some tests")
@@ -116,7 +117,7 @@ if __name__ == "__main__":
 
     elif args.switch == "orders":
         from solutions.trades import load_trades, split_trades
-        from solutions.orders import convert_trades_to_orders, update_price, save_orders
+        from solutions.orders import convert_trades_to_orders, update_price_tianqin, update_price_wind, save_orders
         from typedef import EnumStrategyName
 
         exe_date = calendar.get_next_date(sig_date, shift=1)
@@ -129,6 +130,12 @@ if __name__ == "__main__":
             opn_pm_trades, opn_am_trades = split_trades(trades, instru_mgr)
             opn_pm_orders = convert_trades_to_orders(opn_pm_trades, instru_mgr, cfg.drift, EnumStrategyName.opn.value)
             opn_am_orders = convert_trades_to_orders(opn_am_trades, instru_mgr, cfg.drift, EnumStrategyName.opn.value)
+            if args.type == "real":
+                update_price_tianqin(opn_pm_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
+                update_price_tianqin(opn_am_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
+            elif args.type == "last":
+                update_price_wind(opn_pm_orders, instru_mgr, cfg.drift, sig_date)
+                update_price_wind(opn_am_orders, instru_mgr, cfg.drift, sig_date)
             save_orders(
                 orders=opn_pm_orders,
                 sig_date=sig_date, exe_date=exe_date,
@@ -145,7 +152,10 @@ if __name__ == "__main__":
             )
         elif args.sec == "cls":
             cls_orders = convert_trades_to_orders(trades, instru_mgr, cfg.drift, EnumStrategyName.cls.value)
-            update_price(cls_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
+            if args.type == "real":
+                update_price_tianqin(cls_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
+            elif args.type == "last":
+                update_price_wind(cls_orders, instru_mgr, cfg.drift, sig_date)
             save_orders(
                 orders=cls_orders,
                 sig_date=sig_date, exe_date=exe_date,
@@ -172,7 +182,7 @@ if __name__ == "__main__":
                 wd_contracts=["RB2505.SHF", "M2505.DCE", "CF505.CZC"],
                 # wd_contracts=["rb2505", "m2505", "CF505"],
                 trade_date=sig_date,
-                fields=["settle,changelt"],
+                fields=["settle", "changelt"],
             )
             print(data)
         else:

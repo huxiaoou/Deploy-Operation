@@ -78,9 +78,9 @@ def load_position_fuai(
         return {}
 
     if sig_type == EnumSigs.opn:
-        account = 'strategy1'
+        account = "胡晓欧截面CTA开盘"
     elif sig_type == EnumSigs.cls:
-        account = 'strategy1'
+        account = "胡晓欧截面CTA收盘"
     else:
         raise ValueError(f"Invalid sig_type ={sig_type}")
 

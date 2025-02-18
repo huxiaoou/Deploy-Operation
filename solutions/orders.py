@@ -1,11 +1,12 @@
 import os
+import numpy as np
 import pandas as pd
 from typing import Literal
 from dataclasses import asdict
 from husfort.qutility import check_and_makedirs, SFG, SFY
 from husfort.qinstruments import CInstruMgr, parse_instrument_from_contract
-from typedef import CTrade, COrder, CAccountTianqin
-from solutions.md import req_md_last_price_tianqin
+from typedef import CTrade, COrder, CAccountTianqin, CPriceBounds
+from solutions.md import req_md_last_price_tianqin, req_md_trade_date_wind
 
 
 def convert_trades_to_orders(
@@ -34,7 +35,7 @@ def convert_trades_to_orders(
     return orders
 
 
-def update_price(
+def update_price_tianqin(
         orders: list[COrder],
         account: CAccountTianqin,
         instru_mgr: CInstruMgr,
@@ -51,6 +52,46 @@ def update_price(
         mini_spread = instru_mgr.get_mini_spread(order.Product)
         order.update_order_price(
             price_bounds=last_prices[contract],
+            drift=drift,
+            mini_spread=mini_spread,
+        )
+    return 0
+
+
+def convert_to_integer_multiple(raw: float, minispread: float) -> float:
+    return int(np.round(raw // minispread * minispread))
+
+
+def update_price_wind(
+        orders: list[COrder],
+        instru_mgr: CInstruMgr,
+        drift: float,
+        trade_date: str,
+):
+    exchange_mapper = {
+        "SHFE": "SHF",
+        "DCE": "DCE",
+        "CZCE": "CZC",
+        "INE": "INE",
+        "GFE": "GFE",
+    }
+    wd_contracts = [f"{order.Instrument.upper()}.{exchange_mapper[order.Exchange]}" for order in orders]
+    md = req_md_trade_date_wind(
+        wd_contracts=wd_contracts,
+        trade_date=trade_date,
+        fields=["settle", "changelt"],
+    )
+    for order, settle, changelt in zip(orders, md["SETTLE"], md["CHANGELT"]):
+        mini_spread = instru_mgr.get_mini_spread(order.Product)
+        # if order.Instrument == "AP505":
+        #     breakpoint()
+        price_bounds = CPriceBounds(
+            last=settle,
+            upper_lim=convert_to_integer_multiple(settle * (1 + changelt / 100), mini_spread) - mini_spread,
+            lower_lim=convert_to_integer_multiple(settle * (1 - changelt / 100), mini_spread) + mini_spread,
+        )
+        order.update_order_price(
+            price_bounds=price_bounds,
             drift=drift,
             mini_spread=mini_spread,
         )
