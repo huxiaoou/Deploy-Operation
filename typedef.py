@@ -101,6 +101,13 @@ class CPos:
             else:
                 self.qty -= trade.qty
 
+    def to_dict(self) -> dict:
+        return {
+            "contract": self.key.contract,
+            "direction": self.key.direction.value,
+            "qty": self.qty,
+        }
+
 
 @dataclass(frozen=True)
 class CPriceBounds:

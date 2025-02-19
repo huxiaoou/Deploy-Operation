@@ -32,8 +32,11 @@ def parse_args():
 
     # --- orders
     sub_arg_parser = sub_arg_parsers.add_parser(name="orders", help="Convert trades to orders")
-    sub_arg_parser.add_argument("--sec", type=str, required=True, choices=("opn", "cls"), help="date of signals")
+    sub_arg_parser.add_argument("--sec", type=str, required=True, choices=("opn", "cls"), help="open or close")
     sub_arg_parser.add_argument("--type", type=str, required=True, choices=("real", "last"), help="type of data source")
+
+    # --- check
+    sub_arg_parsers.add_parser(name="check", help="Check positions")
 
     # --- tests
     sub_arg_parser = sub_arg_parsers.add_parser(name="test", help="do some tests")
@@ -114,7 +117,6 @@ if __name__ == "__main__":
                 use_tq=args.usetq,
             )
             save_trades(trades_opn, sig_date, sig_type, cfg.trades_file_name_tmpl, cfg.trades_dir)
-
     elif args.switch == "orders":
         from solutions.trades import load_trades, split_trades
         from solutions.orders import convert_trades_to_orders, update_price_tianqin, update_price_wind, save_orders
@@ -163,6 +165,20 @@ if __name__ == "__main__":
                 orders_file_name_tmpl=cfg.orders_file_name_tmpl,
                 orders_dir=cfg.orders_dir,
             )
+    elif args.switch == "check":
+        from solutions.check import check_positions
+
+        exe_date = calendar.get_next_date(sig_date, shift=1)
+        for sig_type in EnumSigs:
+            check_positions(
+                exe_date=exe_date,
+                sig_date=sig_date,
+                sig_type=sig_type,
+                positions_file_name_tqdb_tmpl=cfg.positions_file_name_tqdb_tmpl,
+                positions_file_name_fuai_tmpl=cfg.positions_file_name_fuai_tmpl,
+                positions_dir=cfg.positions_dir,
+            )
+
     elif args.switch == "test":
         if args.sub == "tianqin":
             import pandas as pd
