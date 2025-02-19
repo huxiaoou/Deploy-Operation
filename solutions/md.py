@@ -17,9 +17,18 @@ def req_md_trade_date_wind(
     :return:
     """
     wapi.start()
-    data = wapi.wss(wd_contracts, fields, options=f"tradeDate={trade_date};cycle=D")
+    unique_ids = list(set(wd_contracts))
+    data = wapi.wss(unique_ids, fields, options=f"tradeDate={trade_date};cycle=D")
     if data.ErrorCode == 0:
-        return pd.DataFrame(data.Data, index=data.Fields, columns=data.Codes).T
+        reqed_data = pd.DataFrame(data.Data, index=data.Fields, columns=data.Codes).T
+        res = pd.merge(
+            left=pd.DataFrame({"contracts": wd_contracts}),
+            right=reqed_data,
+            left_on="contracts",
+            right_index=True,
+            how="left",
+        ).set_index("contracts")
+        return res
     else:
         raise Exception(f"Wind data ErrorCode = {data.ErrorCode}")
 
