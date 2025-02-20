@@ -43,7 +43,7 @@ def update_price_tianqin(
 ):
     tq_contracts = [f"{order.Exchange}.{order.Instrument}" for order in orders]
     last_prices = req_md_last_price_tianqin(
-        tq_contracts=tq_contracts,
+        tq_contracts=list(set(tq_contracts)),
         tq_account=account.account,
         tq_password=account.password,
     )
@@ -68,23 +68,16 @@ def update_price_wind(
         drift: float,
         trade_date: str,
 ):
-    exchange_mapper = {
-        "SHFE": "SHF",
-        "DCE": "DCE",
-        "CZCE": "CZC",
-        "INE": "INE",
-        "GFE": "GFE",
-    }
-    wd_contracts = [f"{order.Instrument.upper()}.{exchange_mapper[order.Exchange]}" for order in orders]
+    wd_contracts = [order.wind_code for order in orders]
     md = req_md_trade_date_wind(
-        wd_contracts=wd_contracts,
+        wd_contracts=list(set(wd_contracts)),
         trade_date=trade_date,
         fields=["settle", "changelt"],
     )
-    for order, settle, changelt in zip(orders, md["SETTLE"], md["CHANGELT"]):
+    for order in orders:
+        order_req_data = md[order.wind_code]
+        settle, changelt = order_req_data["settle"], order_req_data["changelt"]
         mini_spread = instru_mgr.get_mini_spread(order.Product)
-        # if order.Instrument == "AP505":
-        #     breakpoint()
         price_bounds = CPriceBounds(
             last=settle,
             upper_lim=convert_to_integer_multiple(settle * (1 + changelt / 100), mini_spread) - mini_spread,
@@ -95,6 +88,8 @@ def update_price_wind(
             drift=drift,
             mini_spread=mini_spread,
         )
+        # if order.wind_code == "AP505.CZC":
+        #     breakpoint()
     return 0
 
 

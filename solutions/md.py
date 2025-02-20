@@ -8,27 +8,19 @@ def req_md_trade_date_wind(
         wd_contracts: list[str],
         trade_date: str,
         fields: list[str],
-) -> pd.DataFrame:
+) -> dict[str, dict[str, str | float | int | None]]:
     """
 
     :param wd_contracts: ["RB2505.SHF", "M2505.DCE", "CF505.CZC"]
     :param trade_date:
-    :param fields:  ["settle,changelt"]
+    :param fields:  ["settle", "changelt"]
     :return:
     """
     wapi.start()
-    unique_ids = list(set(wd_contracts))
-    data = wapi.wss(unique_ids, fields, options=f"tradeDate={trade_date};cycle=D")
+    data = wapi.wss(wd_contracts, fields, options=f"tradeDate={trade_date};cycle=D")
     if data.ErrorCode == 0:
-        reqed_data = pd.DataFrame(data.Data, index=data.Fields, columns=data.Codes).T
-        res = pd.merge(
-            left=pd.DataFrame({"contracts": wd_contracts}),
-            right=reqed_data,
-            left_on="contracts",
-            right_index=True,
-            how="left",
-        ).set_index("contracts")
-        return res
+        reqed_data = pd.DataFrame(data.Data, index=fields, columns=data.Codes).T
+        return reqed_data.to_dict(orient="index")
     else:
         raise Exception(f"Wind data ErrorCode = {data.ErrorCode}")
 

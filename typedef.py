@@ -147,6 +147,17 @@ class COrder:
         all_fields = fields(COrder)
         return [f.name for f in all_fields]
 
+    @property
+    def wind_code(self) -> str:
+        exchange_mapper = {
+            "SHFE": "SHF",
+            "DCE": "DCE",
+            "CZCE": "CZC",
+            "INE": "INE",
+            "GFE": "GFE",
+        }
+        return f"{self.Instrument.upper()}.{exchange_mapper[self.Exchange]}"
+
     def update_order_price(self, price_bounds: CPriceBounds, drift: float, mini_spread: float):
         if self.Direction == "买":
             order_price = price_bounds.last * (1 + drift)
