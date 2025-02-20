@@ -36,7 +36,8 @@ def parse_args():
     sub_arg_parser.add_argument("--type", type=str, required=True, choices=("real", "last"), help="type of data source")
 
     # --- check
-    sub_arg_parsers.add_parser(name="check", help="Check positions")
+    sub_arg_parser = sub_arg_parsers.add_parser(name="check", help="Check positions")
+    sub_arg_parser.add_argument("--sec", type=str, required=True, choices=("opn", "cls"), help="open or close")
 
     # --- tests
     sub_arg_parser = sub_arg_parsers.add_parser(name="test", help="do some tests")
@@ -51,8 +52,10 @@ def parse_args():
 
 
 if __name__ == "__main__":
+    import sys
     from husfort.qcalendar import CCalendar
     from husfort.qinstruments import CInstruMgr
+    from husfort.qutility import SFY
     from typedef import EnumSigs
     from config import cfg
 
@@ -60,6 +63,9 @@ if __name__ == "__main__":
     instru_mgr = CInstruMgr(instru_info_path=cfg.instru_info_path)
     args = parse_args()
     sig_date = args.date
+    if not calendar.has_date(sig_date):
+        print(f"[INF] {SFY(sig_date)} is not a valid trade date")
+        sys.exit(0)
 
     if args.switch == "allocated":
         from solutions.allocated_equity import gen_allocated_equity_from_cash_flow
@@ -169,15 +175,15 @@ if __name__ == "__main__":
         from solutions.check import check_positions
 
         exe_date = calendar.get_next_date(sig_date, shift=1)
-        for sig_type in EnumSigs:
-            check_positions(
-                exe_date=exe_date,
-                sig_date=sig_date,
-                sig_type=sig_type,
-                positions_file_name_tqdb_tmpl=cfg.positions_file_name_tqdb_tmpl,
-                positions_file_name_fuai_tmpl=cfg.positions_file_name_fuai_tmpl,
-                positions_dir=cfg.positions_dir,
-            )
+        sig_type = EnumSigs(args.sec)
+        check_positions(
+            exe_date=exe_date,
+            sig_date=sig_date,
+            sig_type=sig_type,
+            positions_file_name_tqdb_tmpl=cfg.positions_file_name_tqdb_tmpl,
+            positions_file_name_fuai_tmpl=cfg.positions_file_name_fuai_tmpl,
+            positions_dir=cfg.positions_dir,
+        )
 
     elif args.switch == "test":
         if args.sub == "tianqin":
