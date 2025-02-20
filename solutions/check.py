@@ -29,7 +29,7 @@ def check_positions(
     print(merge_data)
     diff_data = merge_data.query("diff > 0 or diff < 0")
     if diff_data.empty:
-        print(f"[INF] Congratulations, no errors are found for positions of {SFG(res_id)}")
+        print(f"[INF] {SFG('Congratulations')}, no errors are found for positions of {SFG(res_id)}")
         summary = pd.pivot_table(data=merge_data, index="direction", values="qty_act", aggfunc="sum")
         print(summary)
     else:

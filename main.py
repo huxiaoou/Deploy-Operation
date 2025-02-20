@@ -126,6 +126,7 @@ if __name__ == "__main__":
     elif args.switch == "orders":
         from solutions.trades import load_trades, split_trades
         from solutions.orders import convert_trades_to_orders, update_price_tianqin, update_price_wind, save_orders
+        from solutions.emails import send_orders
         from typedef import EnumStrategyName
 
         exe_date = calendar.get_next_date(sig_date, shift=1)
@@ -171,6 +172,15 @@ if __name__ == "__main__":
                 orders_file_name_tmpl=cfg.orders_file_name_tmpl,
                 orders_dir=cfg.orders_dir,
             )
+        send_orders(
+            account_mail=cfg.account_mail,
+            sig_date=sig_date, exe_date=exe_date,
+            sec_type=args.sec,
+            orders_file_name_tmpl=cfg.orders_file_name_tmpl,
+            orders_dir=cfg.orders_dir,
+            receivers=cfg.receivers,
+        )
+
     elif args.switch == "check":
         from solutions.check import check_positions
 

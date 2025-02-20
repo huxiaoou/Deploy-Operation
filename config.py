@@ -1,4 +1,4 @@
-from typedef import CCfg, CHost, CAccountTianqin
+from typedef import CCfg, CHost, CAccountTianqin, CAccountMail
 
 cfg = CCfg(
     calendar_path=r"E:\OneDrive\Data\Calendar\cne_calendar.csv",
@@ -19,5 +19,13 @@ cfg = CCfg(
     account_tianqin=CAccountTianqin(
         account="15905194497",
         password="Pkusms100871",
-    )
+    ),
+    account_mail=CAccountMail(
+        host="smtp.163.com",
+        port=25,
+        sender="sxzqtest@163.com",
+        password="XKdwhjgKeHRim3mb",
+    ),
+    # receivers=["zhangyueli@sxzq.com"],
+    receivers=["huxiaoou@sxzq.com"],
 )

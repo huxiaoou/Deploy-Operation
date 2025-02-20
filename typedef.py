@@ -176,6 +176,14 @@ class CAccountTianqin:
     password: str
 
 
+@dataclass(frozen=True)
+class CAccountMail:
+    host: str
+    port: int
+    sender: str
+    password: str
+
+
 @dataclass
 class CCfg:
     calendar_path: str
@@ -189,6 +197,8 @@ class CCfg:
     trades_file_name_tmpl: str
     orders_file_name_tmpl: str
     account_tianqin: CAccountTianqin
+    account_mail: CAccountMail
+    receivers: list[str]
 
     drift: float
 
