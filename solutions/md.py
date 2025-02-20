@@ -1,5 +1,6 @@
 from tqsdk import TqApi, TqAuth
 from typedef import CPriceBounds
+from husfort.qutility import SFR
 from WindPy import w as wapi
 import pandas as pd
 
@@ -41,6 +42,8 @@ def req_md_last_price_tianqin(
     api = TqApi(auth=TqAuth(user_name=tq_account, password=tq_password))
     quotes = [api.get_quote(contract) for contract in tq_contracts]
     res: dict[str, CPriceBounds | None] = {contract: None for contract in tq_contracts}
+
+    print(f"[INF] {SFR('本函数将请求实时行情,非交易时间调用本函数会导致程序暂停,直到再次收到行情推送.')}")
 
     while True:
         api.wait_update()
