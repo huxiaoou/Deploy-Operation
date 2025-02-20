@@ -33,7 +33,7 @@ def parse_args():
     # --- orders
     sub_arg_parser = sub_arg_parsers.add_parser(name="orders", help="Convert trades to orders")
     sub_arg_parser.add_argument("--sec", type=str, required=True, choices=("opn", "cls"), help="open or close")
-    sub_arg_parser.add_argument("--type", type=str, required=True, choices=("real", "last"), help="type of data source")
+    sub_arg_parser.add_argument("--rt", default=False, action="store_true", help="use real time data")
 
     # --- check
     sub_arg_parser = sub_arg_parsers.add_parser(name="check", help="Check positions")
@@ -139,10 +139,10 @@ if __name__ == "__main__":
             opn_pm_trades, opn_am_trades = split_trades(trades, instru_mgr)
             opn_pm_orders = convert_trades_to_orders(opn_pm_trades, instru_mgr, cfg.drift, EnumStrategyName.opn.value)
             opn_am_orders = convert_trades_to_orders(opn_am_trades, instru_mgr, cfg.drift, EnumStrategyName.opn.value)
-            if args.type == "real":
+            if args.rt:
                 update_price_tianqin(opn_pm_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
                 update_price_tianqin(opn_am_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
-            elif args.type == "last":
+            else:
                 update_price_wind(opn_pm_orders, instru_mgr, cfg.drift, sig_date)
                 update_price_wind(opn_am_orders, instru_mgr, cfg.drift, sig_date)
             save_orders(
@@ -161,9 +161,9 @@ if __name__ == "__main__":
             )
         elif args.sec == "cls":
             cls_orders = convert_trades_to_orders(trades, instru_mgr, cfg.drift, EnumStrategyName.cls.value)
-            if args.type == "real":
+            if args.rt:
                 update_price_tianqin(cls_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
-            elif args.type == "last":
+            else:
                 update_price_wind(cls_orders, instru_mgr, cfg.drift, sig_date)
             save_orders(
                 orders=cls_orders,
