@@ -125,9 +125,8 @@ if __name__ == "__main__":
             save_trades(trades_opn, sig_date, sig_type, cfg.trades_file_name_tmpl, cfg.trades_dir)
     elif args.switch == "orders":
         from solutions.trades import load_trades, split_trades
-        from solutions.orders import convert_trades_to_orders, update_price_tianqin, update_price_wind, save_orders
+        from solutions.orders import main_order
         from solutions.emails import send_orders
-        from typedef import EnumStrategyName
 
         exe_date = calendar.get_next_date(sig_date, shift=1)
         sig_type = EnumSigs(args.sec)
@@ -137,38 +136,22 @@ if __name__ == "__main__":
         )
         if args.sec == "opn":
             opn_pm_trades, opn_am_trades = split_trades(trades, instru_mgr)
-            opn_pm_orders = convert_trades_to_orders(opn_pm_trades, instru_mgr, cfg.drift, EnumStrategyName.opn.value)
-            opn_am_orders = convert_trades_to_orders(opn_am_trades, instru_mgr, cfg.drift, EnumStrategyName.opn.value)
-            if args.rt:
-                update_price_tianqin(opn_pm_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
-                update_price_tianqin(opn_am_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
-            else:
-                update_price_wind(opn_pm_orders, instru_mgr, cfg.drift, sig_date)
-                update_price_wind(opn_am_orders, instru_mgr, cfg.drift, sig_date)
-            save_orders(
-                orders=opn_pm_orders,
-                sig_date=sig_date, exe_date=exe_date,
-                sec_type="opn", am_or_pm="pm",
-                orders_file_name_tmpl=cfg.orders_file_name_tmpl,
-                orders_dir=cfg.orders_dir,
-            )
-            save_orders(
-                orders=opn_am_orders,
-                sig_date=sig_date, exe_date=exe_date,
-                sec_type="opn", am_or_pm="am",
-                orders_file_name_tmpl=cfg.orders_file_name_tmpl,
-                orders_dir=cfg.orders_dir,
-            )
+            for tds, am_or_pm in zip([opn_pm_trades, opn_am_trades], ["pm", "am"]):
+                main_order(
+                    trades=tds,
+                    sig_date=sig_date, exe_date=exe_date,
+                    sig_type=sig_type, am_or_pm=am_or_pm,
+                    drift=cfg.drift, instru_mgr=instru_mgr,
+                    using_rt=args.rt, account_tianqin=cfg.account_tianqin,
+                    orders_file_name_tmpl=cfg.orders_file_name_tmpl, orders_dir=cfg.orders_dir,
+                )
         elif args.sec == "cls":
-            cls_orders = convert_trades_to_orders(trades, instru_mgr, cfg.drift, EnumStrategyName.cls.value)
-            if args.rt:
-                update_price_tianqin(cls_orders, cfg.account_tianqin, instru_mgr, cfg.drift)
-            else:
-                update_price_wind(cls_orders, instru_mgr, cfg.drift, sig_date)
-            save_orders(
-                orders=cls_orders,
+            main_order(
+                trades=trades,
                 sig_date=sig_date, exe_date=exe_date,
-                sec_type="cls", am_or_pm="pm",
+                sig_type=sig_type, am_or_pm="pm",
+                drift=cfg.drift, instru_mgr=instru_mgr,
+                using_rt=args.rt, account_tianqin=cfg.account_tianqin,
                 orders_file_name_tmpl=cfg.orders_file_name_tmpl,
                 orders_dir=cfg.orders_dir,
             )
@@ -180,7 +163,6 @@ if __name__ == "__main__":
             orders_dir=cfg.orders_dir,
             receivers=cfg.receivers,
         )
-
     elif args.switch == "check":
         from solutions.check import check_positions
 

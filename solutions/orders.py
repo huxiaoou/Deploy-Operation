@@ -5,7 +5,7 @@ from typing import Literal
 from dataclasses import asdict
 from husfort.qutility import check_and_makedirs, SFG, SFY
 from husfort.qinstruments import CInstruMgr, parse_instrument_from_contract
-from typedef import CTrade, COrder, CAccountTianqin, CPriceBounds
+from typedef import CTrade, COrder, CAccountTianqin, CPriceBounds, EnumSigs
 from solutions.md import req_md_last_price_tianqin, req_md_trade_date_wind
 
 
@@ -117,4 +117,33 @@ def save_orders(
     orders_path = os.path.join(d, orders_file)
     df.to_excel(orders_path, index=False, float_format="%.2f", engine='openpyxl')
     print(f"[INF] Orders of {sig_date}-{sec_type}-{am_or_pm} are saved to {SFG(orders_path)}")
+    return 0
+
+
+def main_order(
+        trades: list[CTrade],
+        sig_date: str,
+        exe_date: str,
+        sig_type: EnumSigs,
+        am_or_pm: Literal["am", "pm"],
+        drift: float,
+        instru_mgr: CInstruMgr,
+        using_rt: bool,
+        account_tianqin: CAccountTianqin,
+        orders_file_name_tmpl: str,
+        orders_dir: str,
+):
+    orders = convert_trades_to_orders(trades, instru_mgr, drift, sig_type.value)
+    if using_rt:
+        update_price_tianqin(orders, account_tianqin, instru_mgr, drift)
+    else:
+        update_price_wind(orders, instru_mgr, drift, sig_date)
+    save_orders(
+        orders=orders,
+        sig_date=sig_date, exe_date=exe_date,
+        sec_type=sig_type.value,
+        am_or_pm=am_or_pm,
+        orders_file_name_tmpl=orders_file_name_tmpl,
+        orders_dir=orders_dir,
+    )
     return 0
