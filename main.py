@@ -34,6 +34,7 @@ def parse_args():
     sub_arg_parser = sub_arg_parsers.add_parser(name="orders", help="Convert trades to orders")
     sub_arg_parser.add_argument("--sec", type=str, required=True, choices=("opn", "cls"), help="open or close")
     sub_arg_parser.add_argument("--rt", default=False, action="store_true", help="use real time data")
+    sub_arg_parser.add_argument("--notsend", default=False, action="store_true", help="not sent emails")
 
     # --- check
     sub_arg_parser = sub_arg_parsers.add_parser(name="check", help="Check positions")
@@ -127,6 +128,7 @@ if __name__ == "__main__":
         from solutions.trades import load_trades, split_trades
         from solutions.orders import main_order
         from solutions.emails import send_orders
+        from typedef import EnumStrategyName
 
         exe_date = calendar.get_next_date(sig_date, shift=1)
         sig_type = EnumSigs(args.sec)
@@ -138,31 +140,29 @@ if __name__ == "__main__":
             opn_pm_trades, opn_am_trades = split_trades(trades, instru_mgr)
             for tds, am_or_pm in zip([opn_pm_trades, opn_am_trades], ["pm", "am"]):
                 main_order(
-                    trades=tds,
-                    sig_date=sig_date, exe_date=exe_date,
-                    sig_type=sig_type, am_or_pm=am_or_pm,
+                    trades=tds, sig_date=sig_date, exe_date=exe_date,
+                    sig_type=sig_type, strategy=EnumStrategyName.opn, am_or_pm=am_or_pm,
                     drift=cfg.drift, instru_mgr=instru_mgr,
                     using_rt=args.rt, account_tianqin=cfg.account_tianqin,
                     orders_file_name_tmpl=cfg.orders_file_name_tmpl, orders_dir=cfg.orders_dir,
                 )
         elif args.sec == "cls":
             main_order(
-                trades=trades,
-                sig_date=sig_date, exe_date=exe_date,
-                sig_type=sig_type, am_or_pm="pm",
+                trades=trades, sig_date=sig_date, exe_date=exe_date,
+                sig_type=sig_type, strategy=EnumStrategyName.cls, am_or_pm="pm",
                 drift=cfg.drift, instru_mgr=instru_mgr,
                 using_rt=args.rt, account_tianqin=cfg.account_tianqin,
+                orders_file_name_tmpl=cfg.orders_file_name_tmpl, orders_dir=cfg.orders_dir,
+            )
+        if not args.notsend:
+            send_orders(
+                account_mail=cfg.account_mail,
+                sig_date=sig_date, exe_date=exe_date,
+                sec_type=args.sec,
                 orders_file_name_tmpl=cfg.orders_file_name_tmpl,
                 orders_dir=cfg.orders_dir,
+                receivers=cfg.receivers,
             )
-        send_orders(
-            account_mail=cfg.account_mail,
-            sig_date=sig_date, exe_date=exe_date,
-            sec_type=args.sec,
-            orders_file_name_tmpl=cfg.orders_file_name_tmpl,
-            orders_dir=cfg.orders_dir,
-            receivers=cfg.receivers,
-        )
     elif args.switch == "check":
         from solutions.check import check_positions
 

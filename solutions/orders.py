@@ -5,7 +5,7 @@ from typing import Literal
 from dataclasses import asdict
 from husfort.qutility import check_and_makedirs, SFG, SFY
 from husfort.qinstruments import CInstruMgr, parse_instrument_from_contract
-from typedef import CTrade, COrder, CAccountTianqin, CPriceBounds, EnumSigs
+from typedef import CTrade, COrder, CAccountTianqin, CPriceBounds, EnumSigs, EnumStrategyName
 from solutions.md import req_md_last_price_tianqin, req_md_trade_date_wind
 
 
@@ -126,6 +126,7 @@ def main_order(
         exe_date: str,
         sig_type: EnumSigs,
         am_or_pm: Literal["am", "pm"],
+        strategy: EnumStrategyName,
         drift: float,
         instru_mgr: CInstruMgr,
         using_rt: bool,
@@ -133,7 +134,7 @@ def main_order(
         orders_file_name_tmpl: str,
         orders_dir: str,
 ):
-    orders = convert_trades_to_orders(trades, instru_mgr, drift, sig_type.value)
+    orders = convert_trades_to_orders(trades, instru_mgr, drift, strategy=strategy.value)
     if using_rt:
         update_price_tianqin(orders, account_tianqin, instru_mgr, drift)
     else:

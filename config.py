@@ -26,6 +26,6 @@ cfg = CCfg(
         sender="sxzqtest@163.com",
         password="XKdwhjgKeHRim3mb",
     ),
-    receivers=["zhangyueli@sxzq.com"],
+    receivers=["zylxka@126.com"],
     # receivers=["huxiaoou@sxzq.com"],
 )
