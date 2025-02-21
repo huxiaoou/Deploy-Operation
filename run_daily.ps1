@@ -4,5 +4,5 @@ python main.py -d $sig_date sync
 python main.py -d $sig_date positions # translate signals to positions
 python main.py -d $sig_date trades # calculate trades from positions
 
-# python main.py -d $sig_date orders --sec opn # use "--real" to call real time data
-# python main.py -d $sig_date orders --sec cls # use "--real" to call real time data
+python main.py -d $sig_date orders --sec opn # use "--rt" to call real time data
+python main.py -d $sig_date orders --sec cls # use "--rt" to call real time data
