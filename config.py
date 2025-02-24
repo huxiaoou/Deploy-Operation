@@ -27,5 +27,5 @@ cfg = CCfg(
         password="XKdwhjgKeHRim3mb",
     ),
     receivers=["zylxka@126.com"],
-    # receivers=["huxiaoou@sxzq.com"],
+    # receivers=["sxzqtest@163.com"],
 )
