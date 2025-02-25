@@ -34,7 +34,7 @@ def parse_args():
     sub_arg_parser = sub_arg_parsers.add_parser(name="orders", help="Convert trades to orders")
     sub_arg_parser.add_argument("--sec", type=str, required=True, choices=("opn", "cls"), help="open or close")
     sub_arg_parser.add_argument("--rt", default=False, action="store_true", help="use real time data")
-    sub_arg_parser.add_argument("--notsend", default=False, action="store_true", help="not sent emails")
+    sub_arg_parser.add_argument("--send", default=False, action="store_true", help="send emails")
 
     # --- check
     sub_arg_parser = sub_arg_parsers.add_parser(name="check", help="Check positions")
@@ -158,7 +158,7 @@ if __name__ == "__main__":
                 using_rt=args.rt, account_tianqin=cfg.account_tianqin,
                 orders_file_name_tmpl=cfg.orders_file_name_tmpl, orders_dir=cfg.orders_dir,
             )
-        if not args.notsend:
+        if args.send:
             send_orders(
                 account_mail=cfg.account_mail,
                 sig_date=sig_date, exe_date=exe_date,

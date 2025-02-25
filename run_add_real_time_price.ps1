@@ -4,4 +4,4 @@ if ($sec -eq "")
 {
     $sec = "cls"
 }
-python main.py -d $trade_date orders --sec $sec --rt
+python main.py -d $trade_date orders --sec $sec --rt --send
