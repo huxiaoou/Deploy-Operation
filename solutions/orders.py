@@ -44,7 +44,7 @@ def update_price_tianqin(
     tq_contracts = [f"{order.Exchange}.{order.Instrument}" for order in orders]
     last_prices = req_md_last_price_tianqin(
         tq_contracts=list(set(tq_contracts)),
-        tq_account=account.account,
+        tq_account=account.userId,
         tq_password=account.password,
     )
     for order in orders:

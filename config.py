@@ -17,7 +17,7 @@ cfg = CCfg(
     orders_file_name_tmpl="orders_sig-date_{}_exe-date_{}_{}_{}.xls",
     drift=0.03,
     account_tianqin=CAccountTianqin(
-        account="15905194497",
+        userId="15905194497",
         password="Pkusms100871",
     ),
     account_mail=CAccountMail(

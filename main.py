@@ -40,6 +40,10 @@ def parse_args():
     sub_arg_parser = sub_arg_parsers.add_parser(name="check", help="Check positions")
     sub_arg_parser.add_argument("--sec", type=str, required=True, choices=("opn", "cls"), help="open or close")
 
+    # --- pnl
+    sub_arg_parser = sub_arg_parsers.add_parser(name="pnl", help="View pnl")
+    sub_arg_parser.add_argument("--sec", type=str, required=True, choices=("opn", "cls"), help="open or close")
+
     # --- tests
     sub_arg_parser = sub_arg_parsers.add_parser(name="test", help="do some tests")
     sub_arg_parser.add_argument(
@@ -176,7 +180,19 @@ if __name__ == "__main__":
             positions_file_name_fuai_tmpl=cfg.positions_file_name_fuai_tmpl,
             positions_dir=cfg.positions_dir,
         )
+    elif args.switch == "pnl":
+        from solutions.view_pnl import view_pnl
 
+        exe_date = calendar.get_next_date(sig_date, shift=1)
+        sig_type = EnumSigs(args.sec)
+        view_pnl(
+            exe_date=exe_date,
+            sig_type=sig_type,
+            account=cfg.account_tianqin,
+            positions_file_name_fuai_tmpl=cfg.positions_file_name_fuai_tmpl,
+            positions_dir=cfg.positions_dir,
+            instru_mgr=instru_mgr,
+        )
     elif args.switch == "test":
         if args.sub == "tianqin":
             import pandas as pd

@@ -3,6 +3,7 @@ from enum import Enum
 from dataclasses import dataclass, fields
 from typing import Literal
 from husfort.qremote import CHost
+from husfort.qviewer_pnl import CAccountTianqin
 
 
 class EnumSigs(Enum):
@@ -187,12 +188,6 @@ class COrder:
             integer_multiple = (order_price // mini_spread) * mini_spread
             self.Price = max(integer_multiple, price_bounds.lower_lim)
         return 0
-
-
-@dataclass(frozen=True)
-class CAccountTianqin:
-    account: str
-    password: str
 
 
 @dataclass(frozen=True)
