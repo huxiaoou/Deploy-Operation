@@ -5,8 +5,8 @@ from typing import Literal
 from dataclasses import asdict
 from husfort.qutility import check_and_makedirs, SFG, SFY
 from husfort.qinstruments import CInstruMgr, parse_instrument_from_contract
-from typedef import CTrade, COrder, CAccountTianqin, CPriceBounds, EnumSigs, EnumStrategyName
-from solutions.md import req_md_last_price_tianqin, req_md_trade_date_wind
+from typedef import CTrade, COrder, CAccountTianqin, CPriceBounds, EnumSigs, EnumStrategyName, CDepthMd
+from solutions.md import req_depth_md_tianqin, req_md_trade_date_wind
 
 
 def convert_trades_to_orders(
@@ -42,7 +42,7 @@ def update_price_tianqin(
         drift: float,
 ):
     tq_contracts = [f"{order.Exchange}.{order.Instrument}" for order in orders]
-    last_prices = req_md_last_price_tianqin(
+    depth_md: dict[str, CDepthMd] = req_depth_md_tianqin(
         tq_contracts=list(set(tq_contracts)),
         tq_account=account.userId,
         tq_password=account.password,
@@ -50,11 +50,11 @@ def update_price_tianqin(
     for order in orders:
         contract = f"{order.Exchange}.{order.Instrument}"
         mini_spread = instru_mgr.get_mini_spread(order.Product)
-        depth_md = last_prices[contract]
+        cntrct_depth_md = depth_md[contract]
         price_bounds = CPriceBounds(
-            last=depth_md.last,
-            upper_lim=depth_md.upper_lim,
-            lower_lim=depth_md.lower_lim,
+            last=cntrct_depth_md.last,
+            upper_lim=cntrct_depth_md.upper_lim,
+            lower_lim=cntrct_depth_md.lower_lim,
         )
         order.update_order_price(
             price_bounds=price_bounds,

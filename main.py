@@ -195,9 +195,9 @@ if __name__ == "__main__":
 
         if args.sub == "tianqin":
             from dataclasses import asdict
-            from solutions.md import req_md_last_price_tianqin
+            from solutions.md import req_depth_md_tianqin
 
-            prices = req_md_last_price_tianqin(
+            prices = req_depth_md_tianqin(
                 tq_contracts=["DCE.a2505", "SHFE.rb2505", "CZCE.CF505"],
                 tq_account=cfg.account_tianqin.userId,
                 tq_password=cfg.account_tianqin.password,

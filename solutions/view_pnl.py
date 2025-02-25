@@ -1,6 +1,6 @@
 from husfort.qinstruments import CInstruMgr, parse_instrument_from_contract
 from husfort.qviewer_pnl import CCfg, CManagerViewer, CPosition, CContract
-from solutions.md import req_md_last_price_tianqin
+from solutions.md import req_depth_md_tianqin
 from solutions.positions import load_position_fuai
 from typedef import EnumSigs, CAccountTianqin, CKey, CPos, CDepthMd
 
@@ -58,7 +58,7 @@ def view_pnl(
         positions_dir=positions_dir,
     )
     tq_contracts = convert_pos_to_tq_contracts(poses, instru_mgr)
-    depth_md: dict[str, CDepthMd] = req_md_last_price_tianqin(
+    depth_md: dict[str, CDepthMd] = req_depth_md_tianqin(
         tq_contracts=list(set(tq_contracts)),
         tq_account=account.userId,
         tq_password=account.password,

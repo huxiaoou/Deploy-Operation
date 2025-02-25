@@ -26,7 +26,7 @@ def req_md_trade_date_wind(
         raise Exception(f"Wind data ErrorCode = {data.ErrorCode}")
 
 
-def req_md_last_price_tianqin(
+def req_depth_md_tianqin(
         tq_contracts: list[str],
         tq_account: str,
         tq_password: str,
