@@ -64,6 +64,6 @@ def view_pnl(
         tq_password=account.password,
     )
     positions = convert_pos_to_positions(poses=poses, instru_mgr=instru_mgr, depth_md=depth_md)
-    mgr = CManagerViewer(positions=positions, config=config)
+    mgr = CManagerViewer(positions=positions, config=config, desc=f"{exe_date}-{sig_type.value}-PNL")
     mgr.main()
     return 0
