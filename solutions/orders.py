@@ -50,8 +50,14 @@ def update_price_tianqin(
     for order in orders:
         contract = f"{order.Exchange}.{order.Instrument}"
         mini_spread = instru_mgr.get_mini_spread(order.Product)
+        depth_md = last_prices[contract]
+        price_bounds = CPriceBounds(
+            last=depth_md.last,
+            upper_lim=depth_md.upper_lim,
+            lower_lim=depth_md.lower_lim,
+        )
         order.update_order_price(
-            price_bounds=last_prices[contract],
+            price_bounds=price_bounds,
             drift=drift,
             mini_spread=mini_spread,
         )

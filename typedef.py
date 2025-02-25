@@ -116,6 +116,25 @@ class CPriceBounds:
     lower_lim: float
 
 
+@dataclass(frozen=True)
+class CDepthMd:
+    last: float
+    open: float
+    high: float
+    low: float
+    pre_close: float
+    pre_settle: float
+    volume: float
+    amount: float
+    open_interest: float
+    bid_price: float
+    ask_price: float
+    bid_volume: float
+    ask_volume: float
+    upper_lim: float
+    lower_lim: float
+
+
 @dataclass
 class COrder:
     OrderType: str = "普通单"
