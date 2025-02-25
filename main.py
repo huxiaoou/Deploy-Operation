@@ -49,9 +49,6 @@ def parse_args():
     sub_arg_parser.add_argument(
         "--sub", type=str, required=True, choices=("tianqin", "wind"), help="'tianqin' or 'wind'",
     )
-    sub_arg_parser.add_argument("--account", type=str, default=None, help="TQ Account name")
-    sub_arg_parser.add_argument("--password", type=str, default=None, help="TQ Account password")
-
     __args = arg_parser.parse_args()
     return __args
 
@@ -194,27 +191,27 @@ if __name__ == "__main__":
             instru_mgr=instru_mgr,
         )
     elif args.switch == "test":
+        import pandas as pd
+
         if args.sub == "tianqin":
-            import pandas as pd
             from dataclasses import asdict
             from solutions.md import req_md_last_price_tianqin
 
             prices = req_md_last_price_tianqin(
                 tq_contracts=["DCE.a2505", "SHFE.rb2505", "CZCE.CF505"],
-                tq_account=args.account,
-                tq_password=args.password,
+                tq_account=cfg.account_tianqin.userId,
+                tq_password=cfg.account_tianqin.password,
             )
             print(pd.DataFrame.from_dict({k: asdict(v) for k, v in prices.items()}, orient="index"))
         elif args.sub == "wind":
             from solutions.md import req_md_trade_date_wind
 
             data = req_md_trade_date_wind(
-                wd_contracts=["RB2505.SHF", "M2505.DCE", "CF505.CZC"],
-                # wd_contracts=["rb2505", "m2505", "CF505"],
+                wd_contracts=["A2505.DCE", "RB2505.SHF", "CF505.CZC"],
                 trade_date=sig_date,
                 fields=["settle", "changelt"],
             )
-            print(data)
+            print(pd.DataFrame.from_dict(data, orient="index"))
         else:
             raise ValueError(f"Invalid argument 'sub': {args.sub}")
     else:
