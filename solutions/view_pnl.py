@@ -37,6 +37,7 @@ def convert_pos_to_positions(
             qty=pos.qty,
             direction=key.direction.value,
             base_price=base_price,
+            last_price=base_price,
         )
         positions.append(position)
     return positions
