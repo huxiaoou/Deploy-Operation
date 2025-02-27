@@ -25,8 +25,8 @@ def check_positions(
     )
     merge_data[["qty_tgt", "qty_act"]] = merge_data[["qty_tgt", "qty_act"]].fillna(0)
     merge_data["diff"] = merge_data["qty_tgt"] - merge_data["qty_act"]
-    print(f"[INF] Target and actual position for {SFG(res_id)}")
-    print(merge_data)
+    # print(f"[INF] Target and actual position for {SFG(res_id)}")
+    # print(merge_data)
     diff_data = merge_data.query("diff > 0 or diff < 0")
     if diff_data.empty:
         print(f"[INF] {SFG('Congratulations')}, no errors are found for positions of {SFG(res_id)}")
