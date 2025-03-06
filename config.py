@@ -1,4 +1,4 @@
-from typedef import CCfg, CHost, CAccountTianqin, CAccountMail
+from typedef import CCfg, CHost, CAccountTianqin, CAccountMail, CAccountOrbit
 
 cfg = CCfg(
     calendar_path=r"E:\OneDrive\Data\Calendar\cne_calendar.csv",
@@ -28,4 +28,9 @@ cfg = CCfg(
     ),
     receivers=["zylxka@126.com"],
     # receivers=["sxzqtest@163.com"],
+    account_orbit=CAccountOrbit(
+        emp_no="WP1564",
+        api_password="7QGd9F9soiZ8YbdI",
+        server_base_url="https://kjtest.sxzq.com:8000/orbit/api/admin"
+    )
 )

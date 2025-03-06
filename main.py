@@ -129,6 +129,7 @@ if __name__ == "__main__":
         from solutions.trades import load_trades, split_trades
         from solutions.orders import main_order
         from solutions.emails import send_orders
+        from solutions.orbit import send_orders_by_orbit
         from typedef import EnumStrategyName
 
         exe_date = calendar.get_next_date(sig_date, shift=1)
@@ -164,6 +165,13 @@ if __name__ == "__main__":
                 orders_dir=cfg.orders_dir,
                 receivers=cfg.receivers,
             )
+            # send_orders_by_orbit(
+            #     account_orbit=cfg.account_orbit,
+            #     sig_date=sig_date, exe_date=exe_date,
+            #     sec_type=args.sec,
+            #     orders_file_name_tmpl=cfg.orders_file_name_tmpl,
+            #     orders_dir=cfg.orders_dir,
+            # )
     elif args.switch == "check":
         from solutions.check import check_positions
 

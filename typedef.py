@@ -198,6 +198,13 @@ class CAccountMail:
     password: str
 
 
+@dataclass(frozen=True)
+class CAccountOrbit:
+    emp_no: str
+    api_password: str
+    server_base_url: str
+
+
 @dataclass
 class CCfg:
     calendar_path: str
@@ -212,6 +219,7 @@ class CCfg:
     orders_file_name_tmpl: str
     account_tianqin: CAccountTianqin
     account_mail: CAccountMail
+    account_orbit: CAccountOrbit
     receivers: list[str]
 
     drift: float
