@@ -9,6 +9,17 @@ from typedef import CTrade, COrder, CAccountTianqin, CPriceBounds, EnumSigs, Enu
 from solutions.md import req_depth_md_tianqin, req_md_trade_date_wind
 
 
+def parse_tm_from_sec_and_apm(sec_type: str, am_or_pm: str) -> str:
+    if (sec_type, am_or_pm) == ("opn", "pm"):
+        return "2100"
+    elif (sec_type, am_or_pm) == ("opn", "am"):
+        return "0900"
+    elif (sec_type, am_or_pm) == ("cls", "pm"):
+        return "1459"
+    else:
+        raise ValueError(f"Invalid combo for {sec_type}, {am_or_pm}")
+
+
 def convert_trades_to_orders(
         trades: list[CTrade],
         instru_mgr: CInstruMgr,
@@ -119,7 +130,8 @@ def save_orders(
     check_and_makedirs(d := os.path.join(orders_dir, sig_date[0:4], sig_date[4:6]))
     if sec_type == "opn" and am_or_pm == "pm":
         exe_date = sig_date
-    orders_file = orders_file_name_tmpl.format(sig_date, exe_date, sec_type, am_or_pm)
+    tm = parse_tm_from_sec_and_apm(sec_type, am_or_pm)
+    orders_file = orders_file_name_tmpl.format(sig_date, exe_date, sec_type, am_or_pm, tm)
     orders_path = os.path.join(d, orders_file)
     df.to_excel(orders_path, index=False, float_format="%.2f", engine='openpyxl')
     print(f"[INF] Orders of {sig_date}-{sec_type}-{am_or_pm} are saved to {SFG(orders_path)}")
