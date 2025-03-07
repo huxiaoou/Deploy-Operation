@@ -25,6 +25,9 @@ class EnumStrategyName(Enum):
     opn: str = "胡晓欧截面CTA开盘"
     cls: str = "胡晓欧截面CTA收盘"
 
+    # opn: str = "胡晓欧截面CTA"
+    # cls: str = "胡晓欧截面CTA"
+
 
 @dataclass(frozen=True, eq=True)
 class CKey:

@@ -113,7 +113,6 @@ def send_orders_by_orbit(
 ):
     client = CClient(account_orbit)
     client.login_by_code()
-    client.query_list(page_no=1, page_size=10, start_date="2025-03-06", end_date="2025-03-06")
     d = os.path.join(orders_dir, sig_date[0:4], sig_date[4:6])
     if sec_type == "opn":
         tm_pm = parse_tm_from_sec_and_apm(sec_type, am_or_pm="pm")
