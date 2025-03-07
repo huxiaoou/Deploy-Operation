@@ -4,7 +4,7 @@ from typedef import CAccountMail
 from solutions.orders import parse_tm_from_sec_and_apm
 
 
-def send_orders(
+def send_orders_by_emails(
         account_mail: CAccountMail,
         sig_date: str,
         exe_date: str,
