@@ -46,6 +46,22 @@ def convert_trades_to_orders(
     return orders
 
 
+def adjust_for_regulation_exception(orders: list[COrder]):
+    def __exception_0(o: COrder):
+        if o.Product == "RM":
+            if o.OfstFlag == "开仓":
+                q = o.VolumeTotal
+                o.VolumeTotal = int(np.round(q / 10) * 10)
+                print(
+                    f"[INF] Quantity of Order {SFG(o.Instrument)} {SFG(o.OfstFlag)} is adjusted from {SFY(q)} to {SFG(order.VolumeTotal)}"
+                )
+
+    print(f"[INF] Adjust orders for regulation")
+    for order in orders:
+        __exception_0(order)
+    return 0
+
+
 def update_price_tianqin(
         orders: list[COrder],
         account: CAccountTianqin,
@@ -157,6 +173,7 @@ def main_order(
         update_price_tianqin(orders, account_tianqin, instru_mgr, drift)
     else:
         update_price_wind(orders, instru_mgr, drift, sig_date)
+    adjust_for_regulation_exception(orders)
     save_orders(
         orders=orders,
         sig_date=sig_date, exe_date=exe_date,
