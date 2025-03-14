@@ -8,7 +8,7 @@ cfg = CCfg(
         username="root",
         port=64745,
     ),
-    src_signals_dir=r"/root/ProjectsData/Deploy-Alpha/signals",
+    src_signals_dir=r"/root/workspace/Data/huxo/Deploy-Alpha/signals",
     project_data_dir=r"E:\Data\Projects\Deploy-Operation",
     signals_file_name_tmpl="signals_sig-date_{}_{}.csv",
     positions_file_name_tqdb_tmpl="positions_sig-date_{}_{}.csv",
