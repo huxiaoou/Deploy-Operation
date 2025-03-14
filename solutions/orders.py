@@ -53,7 +53,7 @@ def adjust_for_regulation_exception(orders: list[COrder]):
                 q = o.VolumeTotal
                 o.VolumeTotal = int(np.round(q / 10) * 10)
                 print(
-                    f"[INF] Quantity of Order {SFG(o.Instrument)} {SFG(o.OfstFlag)} is adjusted from {SFY(q)} to {SFG(order.VolumeTotal)}"
+                    f"[INF] Quantity of Order {SFG(o.Instrument)}-{SFG(o.Direction)}-{SFG(o.OfstFlag)} is adjusted from {SFY(q)} to {SFG(order.VolumeTotal)}"
                 )
 
     print(f"[INF] Adjust orders for regulation")
